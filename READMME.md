@@ -1,4 +1,4 @@
-Dependencies & Installation
+# Dependencies & Installation
 
     Initialize the project:
 
