@@ -70,6 +70,9 @@ app.get("/databaseHealth", (request, response) => {
     })
 });
 
+const { userController } = require('./routes/userRoutes.js');
+app.use('/user', userController);
+
 app.get("/databaseDump", async (request, response) => {
     const dumpContainer = {};
 
