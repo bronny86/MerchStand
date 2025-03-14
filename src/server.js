@@ -67,6 +67,14 @@ app.use('/user', userRoutes);
 const designRoutes = require('./routes/designRoutes.js');
 app.use('/designs', designRoutes);
 
+// Mount order routes
+const orderRoutes = require('./routes/orderRoutes.js');
+app.use('/orders', orderRoutes);
+
+// Mount font routes
+const fontRoutes = require('./routes/fontRoutes.js');
+app.use('/fonts', fontRoutes);
+
 // Database health endpoint
 app.get("/databaseHealth", (req, res) => {
     const databaseState = mongoose.connection.readyState;

@@ -1,15 +1,13 @@
-// models/Design.js
+// src/models/Design.js
 const mongoose = require('mongoose');
 
-const DesignSchema = new mongoose.Schema({
-    textContent: {type: String, required: true},
-    fontSize: {type: Number, required: true},
-    position: {type: String, required: true},
-    user: {type: mongoose.Types.ObjectId, ref: 'User'},
-    font: {type: mongoose.Types.ObjectId, ref: 'Font'},
-    clipArt: {type: mongoose.Types.ObjectId, ref: 'ClipArt'}
-});
+const designSchema = new mongoose.Schema({
+  textContent: { type: String, required: true },
+  fontSize: { type: Number },
+  position: { type: String },
+  fontId: { type: mongoose.Schema.Types.ObjectId, ref: 'Font' },
+  clipartId: { type: mongoose.Schema.Types.ObjectId, ref: 'ClipArt' }
+}, { timestamps: true });
 
-const Design = mongoose.model('Design', DesignSchema);
-
-module.exports = { Design, DesignSchema };
+// Export the model directly (so that Design.find works)
+module.exports = mongoose.model('Design', designSchema);

@@ -1,21 +1,21 @@
 // src/routes/designRoutes.js
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const designController = require("../controllers/designController");
+const designController = require('../controllers/designController');
 
 // GET all designs
-router.get("/", designController.getAllDesigns);
+router.get('/', designController.getAllDesigns);
 
-// GET a specific design by ID
-router.get("/:id", designController.getDesignById);
+// GET a specific design by ID using "id=" syntax
+router.get('/id=:id', designController.getDesignById);
 
 // POST a new design
-router.post("/", designController.createDesign);
+router.post('/', designController.createDesign);
 
-// PUT to update an existing design by ID
-router.put("/:id", designController.updateDesign);
+// PUT to update a specific design using "id=" syntax
+router.put('/id=:id', designController.updateDesign);
 
-// DELETE a design by ID
-router.delete("/:id", designController.deleteDesign);
+// DELETE a specific design using "id=" syntax
+router.delete('/id=:id', designController.deleteDesign);
 
 module.exports = router;

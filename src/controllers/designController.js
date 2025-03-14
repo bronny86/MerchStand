@@ -1,10 +1,10 @@
 // src/controllers/designController.js
-const DesignModel = require("../models/Design.js");
+const Design = require('../models/Design');
 
 // GET all designs
 exports.getAllDesigns = async (req, res, next) => {
   try {
-    const designs = await DesignModel.find();
+    const designs = await Design.find();
     if (!designs || designs.length === 0) {
       return res.status(404).json({ error: "No designs found" });
     }
@@ -17,7 +17,8 @@ exports.getAllDesigns = async (req, res, next) => {
 // GET a specific design by ID
 exports.getDesignById = async (req, res, next) => {
   try {
-    const design = await DesignModel.findById(req.params.id);
+    const { id } = req.params;
+    const design = await Design.findById(id);
     if (!design) {
       return res.status(404).json({ error: "Design not found" });
     }
@@ -30,7 +31,7 @@ exports.getDesignById = async (req, res, next) => {
 // POST a new design
 exports.createDesign = async (req, res, next) => {
   try {
-    const design = new DesignModel(req.body);
+    const design = new Design(req.body);
     const savedDesign = await design.save();
     res.status(201).json(savedDesign);
   } catch (error) {
@@ -41,7 +42,7 @@ exports.createDesign = async (req, res, next) => {
 // PUT to update an existing design by ID
 exports.updateDesign = async (req, res, next) => {
   try {
-    const updatedDesign = await DesignModel.findByIdAndUpdate(
+    const updatedDesign = await Design.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
@@ -58,7 +59,7 @@ exports.updateDesign = async (req, res, next) => {
 // DELETE a design by ID
 exports.deleteDesign = async (req, res, next) => {
   try {
-    const deletedDesign = await DesignModel.findByIdAndDelete(req.params.id);
+    const deletedDesign = await Design.findByIdAndDelete(req.params.id);
     if (!deletedDesign) {
       return res.status(404).json({ error: "Design not found" });
     }
