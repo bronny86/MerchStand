@@ -75,6 +75,18 @@ app.use('/orders', orderRoutes);
 const fontRoutes = require('./routes/fontRoutes.js');
 app.use('/fonts', fontRoutes);
 
+// Mount clipart routes
+const clipartRoutes = require('./routes/clipartRoutes.js');
+app.use('/cliparts', clipartRoutes);
+
+// Mount payment routes
+const paymentRoutes = require('./routes/paymentRoutes.js');
+app.use('/payments', paymentRoutes);
+
+// Mount stock routes
+const stockRoutes = require('./routes/stockRoutes.js');
+app.use('/stocks', stockRoutes);
+
 // Database health endpoint
 app.get("/databaseHealth", (req, res) => {
     const databaseState = mongoose.connection.readyState;

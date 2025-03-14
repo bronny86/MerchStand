@@ -1,14 +1,13 @@
-// models/ClipArt.js
+// src/models/ClipArt.js
 const mongoose = require('mongoose');
 
-const ClipArtSchema = new mongoose.Schema({
-    clipArtName: {type: String, required: true},
-    clipArtCategory: {type: String, required: true},
-    clipArtCreator: {type: String, required: true},
-    clipArtCost: {type: Number, required: true},
-    clipArtColor: {type: String, required: true}
-});
+const clipArtSchema = new mongoose.Schema({
+  clipartName: { type: String, required: true },
+  category: { type: String },
+  creator: { type: String },
+  clipartCost: { type: Number, required: true },
+  colorOptions: { type: String, required: true }
+}, { timestamps: true });
 
-const ClipArt = mongoose.model('ClipArt', ClipArtSchema);
-
-module.exports = { ClipArt, ClipArtSchema };
+// Export the model directly so that it has the .find() method
+module.exports = mongoose.model('ClipArt', clipArtSchema);
