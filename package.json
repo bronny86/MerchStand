@@ -5,8 +5,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "seed": "node src/utils/seed.js",
-    "wipe": "node src/utils/wipe.js",
+    "seed": "node src/seeds.js",
+    "wipe": "node src/wipe.js",
     "test": "jest"
   },
   "keywords": [],

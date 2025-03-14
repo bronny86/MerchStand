@@ -1,3 +1,4 @@
+// models/ClipArt.js
 const mongoose = require('mongoose');
 
 const ClipArtSchema = new mongoose.Schema({

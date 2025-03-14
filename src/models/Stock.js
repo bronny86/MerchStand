@@ -1,3 +1,4 @@
+// models/Stock.js
 const mongoose = require('mongoose');
 
 const StockSchema = new mongoose.Schema({

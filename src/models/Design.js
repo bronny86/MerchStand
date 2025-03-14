@@ -1,3 +1,4 @@
+// models/Design.js
 const mongoose = require('mongoose');
 
 const DesignSchema = new mongoose.Schema({
