@@ -1,4 +1,4 @@
-// controllers/userController.js
+const mongoose = require('mongoose'); // Add this line
 const User = require('../models/User');
 
 // Create a new user with email uniqueness check
@@ -35,7 +35,12 @@ exports.getAllUsers = async (req, res, next) => {
 // Get a specific user by ID
 exports.getUserById = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id);
+    const { id } = req.params;
+    // Validate that the id is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+    const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
