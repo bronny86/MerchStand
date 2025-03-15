@@ -1,10 +1,26 @@
 // src/controllers/orderController.js
 const Order = require('../models/Order');
 
-// GET all orders
+// GET all orders with optional filtering and sorting
 exports.getAllOrders = async (req, res, next) => {
   try {
-    const orders = await Order.find();
+    // Extract query parameters (e.g., orderStatus, userId, sort)
+    const { orderStatus, userId, sort } = req.query;
+    const filter = {};
+    if (orderStatus) {
+      filter.orderStatus = orderStatus;
+    }
+    if (userId) {
+      filter.userId = userId;
+    }
+
+    // Default sort by orderDate (newest first). You can use "asc" or "desc".
+    let sortOption = { orderDate: -1 };
+    if (sort) {
+      sortOption = { orderDate: sort.toLowerCase() === 'asc' ? 1 : -1 };
+    }
+
+    const orders = await Order.find(filter).sort(sortOption);
     if (!orders || orders.length === 0) {
       return res.status(404).json({ error: "No orders found" });
     }

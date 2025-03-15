@@ -1,10 +1,19 @@
 // src/controllers/designController.js
 const Design = require('../models/Design');
 
-// GET all designs
+// GET all designs with optional filtering and sorting
 exports.getAllDesigns = async (req, res, next) => {
   try {
-    const designs = await Design.find();
+    const { fontId, sort } = req.query;
+    const filter = {};
+    if (fontId) {
+      filter.fontId = fontId;
+    }
+    let sortOption = { createdAt: -1 }; // default: newest first
+    if (sort) {
+      sortOption = { createdAt: sort.toLowerCase() === 'asc' ? 1 : -1 };
+    }
+    const designs = await Design.find(filter).sort(sortOption);
     if (!designs || designs.length === 0) {
       return res.status(404).json({ error: "No designs found" });
     }
@@ -39,7 +48,7 @@ exports.createDesign = async (req, res, next) => {
   }
 };
 
-// PUT to update an existing design by ID
+// PUT update an existing design by ID
 exports.updateDesign = async (req, res, next) => {
   try {
     const updatedDesign = await Design.findByIdAndUpdate(

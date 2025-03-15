@@ -89,8 +89,12 @@ app.use('/stocks', stockRoutes);
 
 // Mount Auth routes
 const authRoutes = require('./routes/authRoutes');
-
 app.use('/auth', authRoutes);
+
+// Mount CustomTShirt routes
+const customDesignRoutes = require('./routes/customtshirtdesignRoutes.js');
+app.use('/custom-designs', customDesignRoutes);
+
 
 // Database health endpoint
 app.get("/databaseHealth", (req, res) => {

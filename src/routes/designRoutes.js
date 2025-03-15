@@ -1,7 +1,7 @@
 // src/routes/designRoutes.js
 const express = require('express');
 const router = express.Router();
-const designController = require('../controllers/designController');
+const designController = require('../controllers/designController'); // No .js extension needed
 
 // GET all designs
 router.get('/', designController.getAllDesigns);
@@ -12,10 +12,10 @@ router.get('/id=:id', designController.getDesignById);
 // POST a new design
 router.post('/', designController.createDesign);
 
-// PUT to update a specific design using "id=" syntax
+// PUT to update an existing design using "id=" syntax
 router.put('/id=:id', designController.updateDesign);
 
-// DELETE a specific design using "id=" syntax
+// DELETE a design using "id=" syntax
 router.delete('/id=:id', designController.deleteDesign);
 
 module.exports = router;
