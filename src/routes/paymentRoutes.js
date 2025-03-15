@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const paymentController = require('../controllers/paymentController');
 
-// GET all payments
+// GET all payments with optional filtering and sorting
 router.get('/', paymentController.getAllPayments);
 
 // GET a specific payment by ID using "id=" syntax
@@ -18,11 +18,10 @@ router.put('/id=:id', paymentController.updatePayment);
 // DELETE (soft delete) a payment using "id=" syntax
 router.delete('/id=:id', paymentController.deletePayment);
 
-// GET all soft-deleted payments
-router.get('/deleted', paymentController.getDeletedPayments);
-
-// Get payments by payment type
+// GET all payments filtered by payment type with validation
 router.get('/paymentType/:paymentType', paymentController.getPaymentsByType);
 
+// GET all soft-deleted payments
+router.get('/deleted', paymentController.getDeletedPayments);
 
 module.exports = router;

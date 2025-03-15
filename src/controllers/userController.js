@@ -35,18 +35,33 @@ exports.createUser = async (req, res, next) => {
   }
 };
 
-// GET all users (returns error if no users found)
+// GET all users with optional filtering and sorting
 exports.getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.find();
+    // Extract query parameters (for example, genre and sort)
+    const { genre, sort } = req.query;
+    const filter = {};
+    if (genre) {
+      filter.genre = genre;
+    }
+
+    // Default sort is by creation date. You can allow "asc" or "desc" values.
+    let sortOption = { createdAt: -1 }; // Default: newest first
+    if (sort) {
+      // Convert sort parameter to a number: -1 for desc, 1 for asc
+      sortOption = { createdAt: sort.toLowerCase() === 'asc' ? 1 : -1 };
+    }
+
+    const users = await User.find(filter).sort(sortOption);
     if (!users || users.length === 0) {
-      return res.status(404).json({ error: 'No users found' });
+      return res.status(404).json({ error: "No users found" });
     }
     res.status(200).json(users);
   } catch (error) {
     next(error);
   }
 };
+
 
 // GET a specific user by ID
 exports.getUserById = async (req, res, next) => {
