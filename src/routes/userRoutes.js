@@ -2,27 +2,21 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
+const { verifyToken } = require('../middlewares/authMiddleware');
 
-// POST route to create a new user
-router.post('/', userController.createUser);
+// POST route to create a new user (protected)
+router.post('/', verifyToken, userController.createUser);
 
-// GET route to retrieve all users
-router.get('/', userController.getAllUsers);
+// GET route to retrieve all users (protected)
+router.get('/', verifyToken, userController.getAllUsers);
 
-// GET route for a specific user using "id=" syntax
-router.get('/id=:id', userController.getUserById);
+// GET route for a specific user using "id=" syntax (protected)
+router.get('/id=:id', verifyToken, userController.getUserById);
 
-// PUT route for a specific user using regex
-router.put(/^\/id=(.*)$/, (req, res, next) => {
-  // Extract the id from the URL and assign it to req.params.id
-  req.params.id = req.params[0];
-  next();
-}, userController.updateUser);
+// PUT route to update a user using "id=" syntax (protected)
+router.put('/id=:id', verifyToken, userController.updateUser);
 
-// DELETE route for a specific user using regex
-router.delete(/^\/id=(.*)$/, (req, res, next) => {
-  req.params.id = req.params[0];
-  next();
-}, userController.deleteUser);
+// DELETE route to delete a user using "id=" syntax (protected)
+router.delete('/id=:id', verifyToken, userController.deleteUser);
 
 module.exports = router;
