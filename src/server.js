@@ -87,6 +87,11 @@ app.use('/payments', paymentRoutes);
 const stockRoutes = require('./routes/stockRoutes.js');
 app.use('/stocks', stockRoutes);
 
+// Mount Auth routes
+const authRoutes = require('./routes/authRoutes');
+
+app.use('/auth', authRoutes);
+
 // Database health endpoint
 app.get("/databaseHealth", (req, res) => {
     const databaseState = mongoose.connection.readyState;

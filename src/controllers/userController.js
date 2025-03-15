@@ -1,16 +1,32 @@
-const mongoose = require('mongoose'); // Add this line
+// src/controllers/userController.js
+const bcrypt = require('bcrypt');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 
-// Create a new user with email uniqueness check
+// Create a new user with email uniqueness check and password hashing
 exports.createUser = async (req, res, next) => {
   try {
-    const { contactEmail } = req.body;
+    const { contactEmail, password } = req.body;
+    
     // Check if a user with the same email already exists
     const existingUser = await User.findOne({ contactEmail });
     if (existingUser) {
       return res.status(400).json({ error: 'Email already in use' });
     }
-
+    
+    // Ensure a password is provided
+    if (!password) {
+      return res.status(400).json({ error: 'Password is required' });
+    }
+    
+    // Hash the plain text password before saving
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    req.body.passwordHash = hashedPassword;
+    
+    // Optionally remove the plain text password from the request body
+    delete req.body.password;
+    
     const user = new User(req.body);
     const savedUser = await user.save();
     res.status(201).json(savedUser);
@@ -19,7 +35,7 @@ exports.createUser = async (req, res, next) => {
   }
 };
 
-// Get all users (returns error if no users found)
+// GET all users (returns error if no users found)
 exports.getAllUsers = async (req, res, next) => {
   try {
     const users = await User.find();
@@ -32,7 +48,7 @@ exports.getAllUsers = async (req, res, next) => {
   }
 };
 
-// Get a specific user by ID
+// GET a specific user by ID
 exports.getUserById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -50,7 +66,7 @@ exports.getUserById = async (req, res, next) => {
   }
 };
 
-// Update a specific user by ID
+// PUT to update an existing user by ID
 exports.updateUser = async (req, res, next) => {
   try {
     const updatedUser = await User.findByIdAndUpdate(
@@ -67,7 +83,7 @@ exports.updateUser = async (req, res, next) => {
   }
 };
 
-// Delete a user by ID
+// DELETE a user by ID
 exports.deleteUser = async (req, res, next) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
