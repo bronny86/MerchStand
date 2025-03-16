@@ -1,11 +1,12 @@
 // src/server.js
-const dotenv = require('dotenv');
 require('dotenv').config();
+const dotenv = require('dotenv');
+
 
 const express = require('express');
 const app = express();
 const HOST = process.env.HOST || 'localhost';
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 
 const helmet = require('helmet');
 const cors = require('cors');
