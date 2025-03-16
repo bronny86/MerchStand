@@ -18,4 +18,8 @@ router.put('/id=:id', stockController.updateStock);
 // DELETE a stock using "id=" syntax
 router.delete('/id=:id', stockController.deleteStock);
 
+// GET stock summary grouped by color
+router.get('/summaryByColor', stockController.getStockSummaryByColor);
+
+
 module.exports = router;

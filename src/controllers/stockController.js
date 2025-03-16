@@ -68,3 +68,25 @@ exports.deleteStock = async (req, res, next) => {
     next(error);
   }
 };
+
+// GET stock summary grouped by color
+exports.getStockSummaryByColor = async (req, res, next) => {
+  try {
+    const summary = await Stock.aggregate([
+      {
+        $group: {
+          _id: "$color",
+          totalStock: { $sum: "$stockQuantity" },
+          avgPrice: { $avg: "$price" }
+        }
+      },
+      { $sort: { _id: 1 } } // Sort alphabetically by color
+    ]);
+    if (!summary || summary.length === 0) {
+      return res.status(404).json({ error: "No stocks found for summary" });
+    }
+    res.status(200).json(summary);
+  } catch (error) {
+    next(error);
+  }
+};

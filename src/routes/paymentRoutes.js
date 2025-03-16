@@ -24,4 +24,11 @@ router.get('/paymentType/:paymentType', paymentController.getPaymentsByType);
 // GET all soft-deleted payments
 router.get('/deleted', paymentController.getDeletedPayments);
 
+// GET summary of payments grouped by type
+router.get('/summary', paymentController.getPaymentsSummary);
+
+// GET summary of payments grouped by user
+router.get('/groupedByUser', paymentController.getPaymentsGroupedByUser);
+
+
 module.exports = router;

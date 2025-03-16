@@ -34,7 +34,8 @@ describe('Payment Endpoints', () => {
   it('should fetch all payments', async () => {
     const res = await request(app).get('/payments');
     expect(res.statusCode).toEqual(200);
-    expect(Array.isArray(res.body)).toBeTruthy();
+    // Check that the data property is an array
+    expect(Array.isArray(res.body.data)).toBeTruthy();
   });
 
   it('should fetch a specific payment by id', async () => {

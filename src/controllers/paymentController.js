@@ -1,25 +1,42 @@
 // src/controllers/paymentController.js
 const Payment = require('../models/Payment');
 
-// GET all payments with optional filtering and sorting
+// GET all payments with filtering, sorting, and pagination
 exports.getAllPayments = async (req, res, next) => {
   try {
-    const { paymentMethod, userId, sort } = req.query;
+    const { paymentMethod, userId, sort, page = 1, limit = 10 } = req.query;
     const filter = {};
     if (paymentMethod) filter.paymentMethod = paymentMethod;
     if (userId) filter.userId = userId;
-
-    // Default sort by createdAt descending (newest first)
+    
+    // Default sort: createdAt descending (newest first)
     let sortOption = { createdAt: -1 };
     if (sort) {
       sortOption = { createdAt: sort.toLowerCase() === 'asc' ? 1 : -1 };
     }
-
-    const payments = await Payment.find(filter).sort(sortOption);
+    
+    const skip = (Number(page) - 1) * Number(limit);
+    const payments = await Payment.find(filter)
+                                  .sort(sortOption)
+                                  .skip(skip)
+                                  .limit(Number(limit));
+    
+    const totalPayments = await Payment.countDocuments(filter);
+    const totalPages = Math.ceil(totalPayments / Number(limit));
+    
     if (!payments || payments.length === 0) {
       return res.status(404).json({ error: "No payments found" });
     }
-    res.status(200).json(payments);
+    
+    res.status(200).json({
+      data: payments,
+      pagination: {
+        totalPayments,
+        totalPages,
+        currentPage: Number(page),
+        limit: Number(limit)
+      }
+    });
   } catch (error) {
     next(error);
   }
@@ -79,7 +96,7 @@ exports.updatePayment = async (req, res, next) => {
   }
 };
 
-// Soft delete a payment by ID with a required reason in the request body
+// Soft delete a payment by ID with a required deletion reason
 exports.deletePayment = async (req, res, next) => {
   try {
     const { reason } = req.body;
@@ -129,6 +146,54 @@ exports.getPaymentsByType = async (req, res, next) => {
       return res.status(404).json({ error: `No payments found for type: ${paymentType}` });
     }
     res.status(200).json(payments);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET summary of payments grouped by payment method
+exports.getPaymentsSummary = async (req, res, next) => {
+  try {
+    const summary = await Payment.aggregate([
+      { $match: { deleted: { $ne: true } } },
+      { 
+        $group: {
+          _id: "$paymentMethod",
+          totalPayments: { $sum: 1 }
+          // Uncomment below if you add a field like paymentAmount:
+          // totalAmount: { $sum: "$paymentAmount" },
+          // avgAmount: { $avg: "$paymentAmount" }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+    if (!summary || summary.length === 0) {
+      return res.status(404).json({ error: "No payments found for summary" });
+    }
+    res.status(200).json(summary);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET summary of payments grouped by user
+exports.getPaymentsGroupedByUser = async (req, res, next) => {
+  try {
+    const summary = await Payment.aggregate([
+      // Only consider non-deleted payments
+      { $match: { deleted: { $ne: true } } },
+      {
+        $group: {
+          _id: "$userId",       // Group by userId
+          totalPayments: { $sum: 1 }
+        }
+      },
+      { $sort: { totalPayments: -1 } } // Sort by total payments descending
+    ]);
+    if (!summary || summary.length === 0) {
+      return res.status(404).json({ error: "No payments found for grouping by user" });
+    }
+    res.status(200).json(summary);
   } catch (error) {
     next(error);
   }
