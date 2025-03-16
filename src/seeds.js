@@ -1,5 +1,6 @@
 // src/seeds.js
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 const { databaseConnector } = require('./database');
 
 // Import models
@@ -14,7 +15,9 @@ const ClipartModel = require("./models/ClipArt.js");
 const dotenv = require('dotenv');
 dotenv.config();
 
-// User seed data (No Admin Users)
+const saltRounds = 10; // Define bcrypt salt rounds
+
+// User seed data (Including Hashed Passwords)
 const users = [
     {
         bandName: "Nirvana",
@@ -23,7 +26,7 @@ const users = [
         location: "Seattle, Washington",
         contactEmail: "nirvana@email.com",
         contactPhone: "555-555-5555",
-        passwordHash: "password",
+        passwordHash: bcrypt.hashSync("password", saltRounds),
         role: "user"
     },
     {
@@ -33,10 +36,10 @@ const users = [
         location: "Los Angeles, California",
         contactEmail: "ratm@email.com",
         contactPhone: "555-555-55456",
-        passwordHash: "password",
+        passwordHash: bcrypt.hashSync("password", saltRounds),
         role: "user"
     },
-    // Admin Accounts
+    // Admin Accounts with Hashed Passwords
     {
         bandName: "Admin - Angus",
         label: "N/A",
@@ -44,7 +47,7 @@ const users = [
         location: "System",
         contactEmail: "your@email.com",
         contactPhone: "555-555-9999",
-        passwordHash: "adminpassword",
+        passwordHash: bcrypt.hashSync("adminpassword", saltRounds),
         role: "admin"
     },
     {
@@ -54,7 +57,7 @@ const users = [
         location: "System",
         contactEmail: "bonny@email.com",
         contactPhone: "555-555-8888",
-        passwordHash: "adminpassword",
+        passwordHash: bcrypt.hashSync("adminpassword", saltRounds),
         role: "admin"
     }
 ];
@@ -62,13 +65,13 @@ const users = [
 // Other collections seed data
 const payments = [
     {
-        userId: "", // Will be assigned dynamically
+        userId: "",
         paymentMethod: "Credit Card",
         last4Digits: "1234",
         transactionId: "TXN1001"
     },
     {
-        userId: "", // Will be assigned dynamically
+        userId: "",
         paymentMethod: "Debit Card",
         last4Digits: "5678",
         transactionId: "TXN1002"
@@ -124,44 +127,6 @@ const cliparts = [
     }
 ];
 
-const designs = [
-    {
-        textContent: "Rock Forever",
-        fontSize: 16,
-        position: "Center",
-        fontId: "", // Will be assigned dynamically
-        clipartId: "" // Will be assigned dynamically
-    },
-    {
-        textContent: "Metal Rules",
-        fontSize: 18,
-        position: "Top",
-        fontId: "", // Will be assigned dynamically
-        clipartId: "" // Will be assigned dynamically
-    }
-];
-
-const orders = [
-    {
-        userId: "", // Will be assigned dynamically
-        designId: "", // Will be assigned dynamically
-        tshirtId: "", // Will be assigned dynamically
-        quantity: 2,
-        totalPrice: 50,
-        orderDate: new Date(),
-        orderStatus: "Pending"
-    },
-    {
-        userId: "", // Will be assigned dynamically
-        designId: "", // Will be assigned dynamically
-        tshirtId: "", // Will be assigned dynamically
-        quantity: 3,
-        totalPrice: 75,
-        orderDate: new Date(),
-        orderStatus: "Paid"
-    }
-];
-
 // Determine database URL
 const env = (process.env.NODE_ENV || "").toLowerCase();
 let databaseURL = "";
@@ -198,48 +163,6 @@ const seedDatabase = async () => {
         // Insert users
         const userResult = await UserModel.insertMany(users);
         console.log(`User data seeded successfully. Inserted count: ${userResult.length}`);
-
-        // Assign dynamic user IDs to payments and orders
-        payments[0].userId = userResult[0]._id;
-        payments[1].userId = userResult[1]._id;
-        orders[0].userId = userResult[0]._id;
-        orders[1].userId = userResult[1]._id;
-
-        // Insert payments
-        const paymentResult = await PaymentModel.insertMany(payments);
-        console.log(`Payment data seeded successfully. Inserted count: ${paymentResult.length}`);
-
-        // Insert stocks
-        const stockResult = await StockModel.insertMany(stocks);
-        console.log(`Stock data seeded successfully. Inserted count: ${stockResult.length}`);
-
-        // Insert fonts
-        const fontResult = await FontModel.insertMany(fonts);
-        console.log(`Font data seeded successfully. Inserted count: ${fontResult.length}`);
-
-        // Insert cliparts
-        const clipartResult = await ClipartModel.insertMany(cliparts);
-        console.log(`Clipart data seeded successfully. Inserted count: ${clipartResult.length}`);
-
-        // Assign dynamic font and clipart IDs to designs
-        designs[0].fontId = fontResult[0]._id;
-        designs[0].clipartId = clipartResult[0]._id;
-        designs[1].fontId = fontResult[1]._id;
-        designs[1].clipartId = clipartResult[1]._id;
-
-        // Insert designs
-        const designResult = await DesignModel.insertMany(designs);
-        console.log(`Design data seeded successfully. Inserted count: ${designResult.length}`);
-
-        // Assign dynamic design and stock IDs to orders
-        orders[0].designId = designResult[0]._id;
-        orders[0].tshirtId = stockResult[0]._id;
-        orders[1].designId = designResult[1]._id;
-        orders[1].tshirtId = stockResult[1]._id;
-
-        // Insert orders
-        const orderResult = await OrderModel.insertMany(orders);
-        console.log(`Order data seeded successfully. Inserted count: ${orderResult.length}`);
 
         console.log("Seeding completed successfully.");
     } catch (error) {
