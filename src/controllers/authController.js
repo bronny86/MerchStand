@@ -1,9 +1,13 @@
 // src/controllers/authController.js
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+console.log('JWT_SECRET:', JWT_SECRET);
+
 
 /**
  * POST /auth/login
