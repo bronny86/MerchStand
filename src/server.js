@@ -5,9 +5,13 @@ dotenv.config();
 const express = require('express');
 const app = express();
 const HOST = process.env.HOST || 'localhost';
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 const helmet = require('helmet');
+const cors = require('cors');
+const mongoose = require('mongoose');
+
+//  Security Middleware
 app.use(helmet());
 app.use(helmet.permittedCrossDomainPolicies());
 app.use(helmet.referrerPolicy());
@@ -17,9 +21,9 @@ app.use(helmet.contentSecurityPolicy({
     }
 }));
 
-const cors = require('cors');
+//  CORS Configuration (Ensure it works on Render)
 const corsOptions = {
-    origin: ["http://localhost:5000", "https://deployedApp.com"],
+    origin: ["http://localhost:5000", "https://merchstand.onrender.com"], // Updated for Render
     optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
@@ -27,76 +31,47 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const mongoose = require('mongoose');
-let databaseURL = "";
-switch (process.env.NODE_ENV?.toLowerCase()) {
-    case "test":
-        databaseURL = "mongodb://localhost:27017/test-database";
-        break;
-    case "development":
-        databaseURL = "mongodb://localhost:27017/development-database";
-        break;
-    case "production":
-        databaseURL = process.env.DATABASE_URL;
-        break;
-    default:
-        console.error("Incorrect JS environment specified, database will not be connected.");
-        break;
-}
+//  MongoDB Connection
+const databaseURL = process.env.DATABASE_URL || "mongodb://localhost:27017/development-database";
 
 console.log(`Connecting to database at: ${databaseURL}`);
 
-const { databaseConnector } = require('./database.js');
+mongoose.connect(databaseURL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => console.log(" Database connected successfully!"))
+.catch(error => console.error(" Database connection error:", error));
 
-databaseConnector(databaseURL)
-    .then(() => {
-        console.log("Database connected successfully!");
-    })
-    .catch(error => {
-        console.log(`
-        Some error occurred connecting to the database! It was: 
-        ${error}
-        `);
-    });
-
-// Mount user routes properly (import as a router, not destructured)
+//  Mount Routes
 const userRoutes = require('./routes/userRoutes.js');
 app.use('/user', userRoutes);
 
-// Mount design routes
 const designRoutes = require('./routes/designRoutes.js');
 app.use('/designs', designRoutes);
 
-// Mount order routes
 const orderRoutes = require('./routes/orderRoutes.js');
 app.use('/orders', orderRoutes);
 
-// Mount font routes
 const fontRoutes = require('./routes/fontRoutes.js');
 app.use('/fonts', fontRoutes);
 
-// Mount clipart routes
 const clipartRoutes = require('./routes/clipartRoutes.js');
 app.use('/cliparts', clipartRoutes);
 
-// Mount payment routes
 const paymentRoutes = require('./routes/paymentRoutes.js');
 app.use('/payments', paymentRoutes);
 
-// Mount stock routes
 const stockRoutes = require('./routes/stockRoutes.js');
 app.use('/stocks', stockRoutes);
 
-// Mount Auth routes
 const authRoutes = require('./routes/authRoutes');
 app.use('/auth', authRoutes);
 
-// Mount CustomTShirt routes
 const customDesignRoutes = require('./routes/customtshirtdesignRoutes.js');
 app.use('/custom-designs', customDesignRoutes);
 
-
-// Database health endpoint
+//  Database Health Check
 app.get("/databaseHealth", (req, res) => {
     const databaseState = mongoose.connection.readyState;
     const databaseName = mongoose.connection.name;
@@ -111,7 +86,7 @@ app.get("/databaseHealth", (req, res) => {
     });
 });
 
-// Database dump endpoint
+//  Database Dump (Debugging Tool)
 app.get("/databaseDump", async (req, res) => {
     const dumpContainer = {};
     let collections = await mongoose.connection.db.listCollections().toArray();
@@ -122,21 +97,26 @@ app.get("/databaseDump", async (req, res) => {
         dumpContainer[collectionName] = collectionData;
     }
 
-    console.log("Dumping all of this data to the client: \n" + JSON.stringify(dumpContainer, null, 4));
+    console.log("🔍 Dumping database data: \n" + JSON.stringify(dumpContainer, null, 4));
     res.json({ data: dumpContainer });
 });
 
-// Root endpoint
+//  Root Route
 app.get('/', (req, res) => {
     res.json({ message: "Hello world!" });
 });
 
-// Catch-all route for undefined endpoints
+//  Catch-All Route for Undefined Endpoints
 app.get('*', (req, res) => {
     res.status(404).json({
         message: "No route with that path found!",
         attemptedPath: req.path
     });
+});
+
+//  Start Server
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://${HOST}:${PORT}`);
 });
 
 module.exports = { HOST, PORT, app };

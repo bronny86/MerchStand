@@ -1,9 +1,30 @@
-// src/routes/authRoutes.js
-const express = require('express');
-const router = express.Router();
-const authController = require('../controllers/authController');
+router.post('/login', async (req, res) => {
+    try {
+        const { contactEmail, password } = req.body;
 
-// POST /auth/login
-router.post('/login', authController.login);
+        console.log(`Login Attempt: ${contactEmail}`); // Debugging log
 
-module.exports = router;
+        const user = await User.findOne({ contactEmail });
+        if (!user) {
+            console.log("User not found!");
+            return res.status(401).json({ error: "Invalid email or password" });
+        }
+
+        console.log(`User found: ${user.contactEmail}, Role: ${user.role}`);
+
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
+        if (!isMatch) {
+            console.log("Password mismatch!");
+            return res.status(401).json({ error: "Invalid email or password" });
+        }
+
+        console.log("Login successful!");
+
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+        res.status(200).json({ token, userId: user._id, role: user.role });
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
