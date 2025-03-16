@@ -1,4 +1,4 @@
-// routes/database.js
+// src/database.js
 const mongoose = require("mongoose");
 const { UserModel } = require("./models/User.js");
 const { PaymentModel } = require("./models/Payment.js");
