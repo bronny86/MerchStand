@@ -5,15 +5,13 @@ const userController = require('../controllers/userController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { requireRole } = require('../middlewares/roleMiddleware');
 
-// Registration route remains open
+// Registration route: open (no token required)
 router.post('/', userController.createUser);
 
-// Protected routes (accessible to all authenticated users)
+// Protected routes:
 router.get('/', verifyToken, userController.getAllUsers);
 router.get('/id=:id', verifyToken, userController.getUserById);
-
-// Routes restricted to admin role (for example, update and delete)
-router.put('/id=:id', verifyToken, requireRole('admin'), userController.updateUser);
-router.delete('/id=:id', verifyToken, requireRole('admin'), userController.deleteUser);
+router.put('/id=:id', verifyToken, userController.updateUser);
+router.delete('/id=:id', verifyToken, userController.deleteUser);
 
 module.exports = router;
