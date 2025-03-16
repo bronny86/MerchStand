@@ -1,4 +1,3 @@
-// src/seeds.js
 const mongoose = require('mongoose');
 const { databaseConnector } = require('./database');
 
@@ -14,6 +13,8 @@ const ClipartModel = require("./models/ClipArt.js");
 // Load environment variables
 const dotenv = require('dotenv');
 dotenv.config();
+
+console.log("Starting the seed script...");
 
 // Create some raw data for the users collection.
 const users = [
@@ -61,7 +62,7 @@ switch (process.env.NODE_ENV.toLowerCase()) {
         databaseURL = "mongodb://localhost:27017/ExpressBuildAnAPI-test";
         break;
     case "development":
-        databaseURL = "mongodb://localhost:27017/ExpressBuildAnAPI-dev";
+        databaseURL = process.env.DATABASE_URL;
         break;
     case "production":
         databaseURL = process.env.DATABASE_URL;
@@ -70,6 +71,8 @@ switch (process.env.NODE_ENV.toLowerCase()) {
         console.error("Incorrect JS environment specified, database will not be connected.");
         break;
 }
+
+console.log(`Connecting to database at: ${databaseURL}`);
 
 // Connect to the database and seed data using a promise chain.
 databaseConnector(databaseURL)
@@ -84,6 +87,7 @@ databaseConnector(databaseURL)
     })
     .then(async () => {
         if (process.env.WIPE === "true") {
+            console.log("Wiping existing data...");
             // Get the names of all collections in the DB.
             const collections = await mongoose.connection.db.listCollections().toArray();
             // Wait for all drop operations to complete.
@@ -94,6 +98,7 @@ databaseConnector(databaseURL)
         }
     })
     .then(async () => {
+        console.log("Seeding user data...");
         const result = await UserModel.insertMany(users);
         console.log("User data seeded successfully. Inserted count:", result.length);
         // Additional seeding operations for other collections can be added here:
@@ -112,3 +117,5 @@ databaseConnector(databaseURL)
     .catch(error => {
         console.error("Error during seeding:", error);
     });
+
+console.log("Seed script execution completed.");
