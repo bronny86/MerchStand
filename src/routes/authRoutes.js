@@ -1,8 +1,16 @@
+const express = require('express');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+
+const router = express.Router();
+
+// Login Route
 router.post('/login', async (req, res) => {
     try {
         const { contactEmail, password } = req.body;
 
-        console.log(`Login Attempt: ${contactEmail}`); // Debugging log
+        console.log(`Login Attempt: ${contactEmail}`);
 
         const user = await User.findOne({ contactEmail });
         if (!user) {
@@ -28,3 +36,5 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
+
+module.exports = router;

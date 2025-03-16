@@ -11,7 +11,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
-//  Security Middleware
+// Security Middleware
 app.use(helmet());
 app.use(helmet.permittedCrossDomainPolicies());
 app.use(helmet.referrerPolicy());
@@ -21,7 +21,7 @@ app.use(helmet.contentSecurityPolicy({
     }
 }));
 
-//  CORS Configuration (Ensure it works on Render)
+// CORS Configuration (Ensure it works on Render)
 const corsOptions = {
     origin: ["http://localhost:5000", "https://merchstand.onrender.com"], // Updated for Render
     optionsSuccessStatus: 200
@@ -31,7 +31,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-//  MongoDB Connection
+// MongoDB Connection
 const databaseURL = process.env.DATABASE_URL || "mongodb://localhost:27017/development-database";
 
 console.log(`Connecting to database at: ${databaseURL}`);
@@ -40,10 +40,13 @@ mongoose.connect(databaseURL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
-.then(() => console.log(" Database connected successfully!"))
-.catch(error => console.error(" Database connection error:", error));
+.then(() => console.log("✅ Database connected successfully!"))
+.catch(error => console.error("❌ Database connection error:", error));
 
-//  Mount Routes
+// Mount Routes (ENSURE AUTH ROUTE IS LOADED FIRST)
+const authRoutes = require('./routes/authRoutes'); // Import Auth Routes
+app.use('/auth', authRoutes); // Ensure this is defined BEFORE the catch-all route
+
 const userRoutes = require('./routes/userRoutes.js');
 app.use('/user', userRoutes);
 
@@ -65,13 +68,10 @@ app.use('/payments', paymentRoutes);
 const stockRoutes = require('./routes/stockRoutes.js');
 app.use('/stocks', stockRoutes);
 
-const authRoutes = require('./routes/authRoutes');
-app.use('/auth', authRoutes);
-
 const customDesignRoutes = require('./routes/customtshirtdesignRoutes.js');
 app.use('/custom-designs', customDesignRoutes);
 
-//  Database Health Check
+// Database Health Check
 app.get("/databaseHealth", (req, res) => {
     const databaseState = mongoose.connection.readyState;
     const databaseName = mongoose.connection.name;
@@ -86,7 +86,7 @@ app.get("/databaseHealth", (req, res) => {
     });
 });
 
-//  Database Dump (Debugging Tool)
+// Database Dump (Debugging Tool)
 app.get("/databaseDump", async (req, res) => {
     const dumpContainer = {};
     let collections = await mongoose.connection.db.listCollections().toArray();
@@ -101,12 +101,12 @@ app.get("/databaseDump", async (req, res) => {
     res.json({ data: dumpContainer });
 });
 
-//  Root Route
+// Root Route
 app.get('/', (req, res) => {
     res.json({ message: "Hello world!" });
 });
 
-//  Catch-All Route for Undefined Endpoints
+// Catch-All Route for Undefined Endpoints (Ensure This is the LAST Route)
 app.get('*', (req, res) => {
     res.status(404).json({
         message: "No route with that path found!",
@@ -114,7 +114,7 @@ app.get('*', (req, res) => {
     });
 });
 
-//  Start Server
+// Start Server
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://${HOST}:${PORT}`);
 });
