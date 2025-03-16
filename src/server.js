@@ -97,7 +97,7 @@ app.get("/databaseDump", async (req, res) => {
         dumpContainer[collectionName] = collectionData;
     }
 
-    console.log("🔍 Dumping database data: \n" + JSON.stringify(dumpContainer, null, 4));
+    console.log(" Dumping database data: \n" + JSON.stringify(dumpContainer, null, 4));
     res.json({ data: dumpContainer });
 });
 
@@ -114,9 +114,11 @@ app.get('*', (req, res) => {
     });
 });
 
-// Start Server
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://${HOST}:${PORT}`);
-});
+//  Prevent Jest from Starting a New Server
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on http://${HOST}:${PORT}`);
+    });
+}
 
 module.exports = { HOST, PORT, app };
