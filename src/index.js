@@ -2,7 +2,7 @@
 // and run it 
 // At the very top of your entry file
 require('dotenv').config();
-
+console.log("Loaded DATABASE_URL:", process.env.DATABASE_URL);
 
 const dotenv = require("dotenv");
 dotenv.config();
