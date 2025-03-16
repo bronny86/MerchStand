@@ -119,5 +119,3 @@ databaseConnector(databaseURL)
     });
 
 console.log("Seed script execution completed.");
-
-
