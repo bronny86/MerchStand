@@ -18,16 +18,23 @@ exports.login = async (req, res, next) => {
     contactEmail = contactEmail.trim().toLowerCase();
     console.log(`Login Attempt: ${contactEmail}`);
 
+    // Log all users in the database before finding the user
+    const allUsers = await User.find({}, { contactEmail: 1 });
+    console.log("All Users in DB:", allUsers);
+
+    // Find user in database
     const user = await User.findOne({ contactEmail });
 
     if (!user) {
-      console.log("User not found!");
+      console.log("User not found in database!");
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
     console.log(`User found: ${user.contactEmail}, Role: ${user.role}`);
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
+    console.log("Password Match Result:", isMatch);
+
     if (!isMatch) {
       console.log("Password mismatch!");
       return res.status(401).json({ error: "Invalid email or password" });
