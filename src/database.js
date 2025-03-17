@@ -1,31 +1,27 @@
-// src/database.js
 const mongoose = require("mongoose");
-const { UserModel } = require("./models/User.js");
-const { PaymentModel } = require("./models/Payment.js");
-const { OrderModel } = require("./models/Order.js");
-const { StockModel } = require("./models/Stock.js");
-const { DesignModel } = require("./models/Design.js");
-const { FontModel } = require("./models/Font.js");
-const { ClipartModel } = require("./models/ClipArt.js");
 
-// connect to the database
+// Prevent multiple connections
 const databaseConnector = async (databaseURL) => {
+    if (mongoose.connection.readyState !== 0) {
+        console.log("🔄 Using existing database connection.");
+        return mongoose.connection;
+    }
+
     try {
         await mongoose.connect(databaseURL);
-        console.log('Database connection successful');
+        console.log("✅ Database connection successful");
     } catch (error) {
-        console.error('Database connection error:', error);
+        console.error("❌ Database connection error:", error);
         throw error;
     }
 };
 
-// disconnect from the database
+// Properly close the connection
 const disconnect = async () => {
-    await mongoose.connection.close();
+    if (mongoose.connection.readyState !== 0) {
+        await mongoose.connection.close();
+        console.log("🚪 Database disconnected.");
+    }
 };
 
-// export the connect and disconnect functions
-module.exports = {
-    databaseConnector,
-    disconnect
-};
+module.exports = { databaseConnector, disconnect };

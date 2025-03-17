@@ -1,12 +1,13 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const helmet = require('helmet');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+const { databaseConnector } = require("./database");
 
 const app = express();
-const HOST = process.env.HOST || 'localhost';
+const HOST = process.env.HOST || "localhost";
 const PORT = process.env.PORT || 5000;
+const databaseURL = process.env.DATABASE_URL || "mongodb://localhost:27017/development-database";
 
 // Security Middleware
 app.use(helmet());
@@ -17,14 +18,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Database Connection
-const databaseURL = process.env.DATABASE_URL || "mongodb://localhost:27017/development-database";
-
-mongoose.connect(databaseURL)
+databaseConnector(databaseURL)
     .then(() => {
-        console.log("✅ Database connected successfully!");
-        
-        // Only start the server if NOT in test mode
-        if (process.env.NODE_ENV !== 'test') {
+        if (process.env.NODE_ENV !== "test") {
             app.listen(PORT, () => {
                 console.log(`🚀 Server running on http://${HOST}:${PORT}`);
             });
@@ -33,11 +29,11 @@ mongoose.connect(databaseURL)
     .catch(error => console.error("❌ Database connection error:", error));
 
 // Routes
-const userRoutes = require('./routes/userRoutes.js');
-app.use('/user', userRoutes);
+const userRoutes = require("./routes/userRoutes.js");
+app.use("/user", userRoutes);
 
-const authRoutes = require('./routes/authRoutes.js');
-app.use('/auth', authRoutes);
+const authRoutes = require("./routes/authRoutes.js");
+app.use("/auth", authRoutes);
 
 // Export app for testing
 module.exports = { app };
