@@ -1,7 +1,7 @@
 // src/tests/rbac.test.js
 const request = require('supertest');
 const mongoose = require('mongoose');
-const { app } = require('../server');
+const { app } = require('../index');
 
 const testDB = 'mongodb://localhost:27017/test-database';
 
