@@ -150,7 +150,27 @@ const designs = [
             "clipartId": "60c72b2f9b1e8c0012345679"
           }
 ];
-const fonts = [];
+const fonts = [
+    {
+        "fontName": "Times New Roman",
+        "fontStyle": "Regular",
+        "fontCost": 9.99,
+        "fontColor": "#000000"
+      },
+        {
+            "fontName": "Arial",
+            "fontStyle": "Regular",
+            "fontCost": 9.99,
+            "fontColor": "#000000"
+        },
+        {
+            "fontName": "Helvetica",
+            "fontStyle": "Regular",
+            "fontCost": 9.99,
+            "fontColor": "#000000"
+        }
+      
+];
 const cliparts = [];
 
 // Determine the database URL based on NODE_ENV
@@ -230,6 +250,12 @@ databaseConnector(databaseURL)
         console.log("Design data seeded successfully. Inserted count:", result.length
         );
         // await FontModel.insertMany(fonts);
+    })
+    .then(async () => {
+        console.log("Seeding font data...");
+        const result = await FontModel.insertMany(fonts);
+        console.log("Font data seeded successfully. Inserted count:", result.length);
+        
         // await ClipartModel.insertMany(cliparts);
     })
     .then(() => {
