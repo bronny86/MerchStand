@@ -3,22 +3,24 @@ require('dotenv').config();
 
 const express = require('express');
 const http = require('http');
+const mongoose = require('mongoose');
+const helmet = require('helmet');
+const cors = require('cors');
+
 const app = express();
 const HOST = process.env.HOST || 'localhost';
 let PORT = process.env.PORT || 5000;
 
-const helmet = require('helmet');
-const cors = require('cors');
-const mongoose = require('mongoose');
+// Log loaded environment variables
+console.log(`Loaded DATABASE_URL: ${process.env.DATABASE_URL || '❌ Not found!'}`);
+console.log(`Loaded JWT_SECRET: ${process.env.JWT_SECRET ? "✅ Found!" : "❌ Not found!"}`);
 
 // Security Middleware
 app.use(helmet());
 app.use(helmet.permittedCrossDomainPolicies());
 app.use(helmet.referrerPolicy());
 app.use(helmet.contentSecurityPolicy({
-    directives: {
-        defaultSrc: ["'self'"]
-    }
+    directives: { defaultSrc: ["'self'"] }
 }));
 
 // CORS Configuration
@@ -33,55 +35,40 @@ app.use(express.urlencoded({ extended: true }));
 
 // MongoDB Connection
 const databaseURL = process.env.DATABASE_URL || "mongodb://localhost:27017/development-database";
-console.log(`Loaded DATABASE_URL: ${databaseURL}`);
 console.log(`Connecting to database at: ${databaseURL}`);
 
-mongoose.connect(databaseURL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => console.log("✅ Database connected successfully!"))
-.catch(error => console.error("❌ Database connection error:", error));
+mongoose.connect(databaseURL)
+    .then(() => console.log("✅ Database connected successfully!"))
+    .catch(error => console.error("❌ Database connection error:", error));
 
 // Mount Routes
 const authRoutes = require('./routes/authRoutes');
-app.use('/auth', authRoutes);
-
 const userRoutes = require('./routes/userRoutes.js');
-app.use('/user', userRoutes);
-
 const designRoutes = require('./routes/designRoutes.js');
-app.use('/designs', designRoutes);
-
 const orderRoutes = require('./routes/orderRoutes.js');
-app.use('/orders', orderRoutes);
-
 const fontRoutes = require('./routes/fontRoutes.js');
-app.use('/fonts', fontRoutes);
-
 const clipartRoutes = require('./routes/clipartRoutes.js');
-app.use('/cliparts', clipartRoutes);
-
 const paymentRoutes = require('./routes/paymentRoutes.js');
-app.use('/payments', paymentRoutes);
-
 const stockRoutes = require('./routes/stockRoutes.js');
-app.use('/stocks', stockRoutes);
-
 const customDesignRoutes = require('./routes/customtshirtdesignRoutes.js');
+
+app.use('/auth', authRoutes);
+app.use('/user', userRoutes);
+app.use('/designs', designRoutes);
+app.use('/orders', orderRoutes);
+app.use('/fonts', fontRoutes);
+app.use('/cliparts', clipartRoutes);
+app.use('/payments', paymentRoutes);
+app.use('/stocks', stockRoutes);
 app.use('/custom-designs', customDesignRoutes);
 
 // Database Health Check
 app.get("/databaseHealth", (req, res) => {
-    const databaseState = mongoose.connection.readyState;
-    const databaseName = mongoose.connection.name;
-    const databaseModels = mongoose.connection.modelNames();
-    const databaseHost = mongoose.connection.host;
-
     res.json({
-        readyState: databaseState,
-        dbName: databaseName,
-        dbModels: databaseModels,
-        dbHost: databaseHost
+        readyState: mongoose.connection.readyState,
+        dbName: mongoose.connection.name,
+        dbModels: mongoose.connection.modelNames(),
+        dbHost: mongoose.connection.host
     });
 });
 
@@ -100,6 +87,12 @@ app.get('*', (req, res) => {
 
 // Prevent Multiple Instances on the Same Port
 const server = http.createServer(app);
+
+server.listen(PORT, () => {
+    console.log(`🚀 Server running on http://${HOST}:${PORT}`);
+});
+
+// Handle Port in Use Error and Auto-Increment Port
 server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
         console.error(`❌ Port ${PORT} is already in use. Trying a new port...`);
@@ -110,10 +103,6 @@ server.on('error', (err) => {
     } else {
         console.error('❌ Server error:', err);
     }
-});
-
-server.listen(PORT, () => {
-    console.log(`🚀 Server running on http://${HOST}:${PORT}`);
 });
 
 module.exports = { HOST, PORT, app };

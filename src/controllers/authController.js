@@ -1,39 +1,34 @@
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
-
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const User = require('../models/User');
-
-console.log('JWT_SECRET:', JWT_SECRET);
-
 exports.login = async (req, res, next) => {
   try {
     let { contactEmail, password } = req.body;
 
     if (!contactEmail || !password) {
+      console.log("Login error: Missing email or password");
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    // Convert email to lowercase and trim spaces before querying
+    // Ensure email is formatted correctly
     contactEmail = contactEmail.trim().toLowerCase();
     console.log(`Login Attempt: ${contactEmail}`);
 
-    // Log all users in the database before finding the user
-    const allUsers = await User.find({}, { contactEmail: 1 });
-    console.log("All Users in DB:", allUsers);
-
-    // Find user in database
+    // Check if email exists in database
     const user = await User.findOne({ contactEmail });
 
     if (!user) {
-      console.log("User not found in database!");
+      console.log("User not found in DB for:", contactEmail);
+      
+      // Debugging: Log all users to verify stored emails
+      const allUsers = await User.find({}, { contactEmail: 1 });
+      console.log("All Users in DB:", allUsers);
+      
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
     console.log(`User found: ${user.contactEmail}, Role: ${user.role}`);
 
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.passwordHash);
-    console.log("Password Match Result:", isMatch);
+    console.log(`bcrypt.compare result: ${isMatch}`);
 
     if (!isMatch) {
       console.log("Password mismatch!");
