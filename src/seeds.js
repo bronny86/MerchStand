@@ -171,7 +171,32 @@ const fonts = [
         }
       
 ];
-const cliparts = [];
+const cliparts = [
+    {
+        "clipartName": "Dragon",
+        "category": "Animal",
+        "creator": "Mr. Dragon",
+        "clipartCost": 4.99,
+        "colorOptions": "red, blue, green"
+      },
+
+      {
+        "clipartName": "Cat",
+        "category": "Animal",
+        "creator": "Mr. Cat",
+        "clipartCost": 4.99,
+        "colorOptions": "red, blue, green"
+      },
+      
+        {
+            "clipartName": "Dog",
+            "category": "Animal",
+            "creator": "Mr. Dog",
+            "clipartCost": 4.99,
+            "colorOptions": "red, blue, green"
+          }
+      
+];
 
 // Determine the database URL based on NODE_ENV
 let databaseURL = "";
@@ -255,8 +280,14 @@ databaseConnector(databaseURL)
         console.log("Seeding font data...");
         const result = await FontModel.insertMany(fonts);
         console.log("Font data seeded successfully. Inserted count:", result.length);
-        
+
         // await ClipartModel.insertMany(cliparts);
+
+    })
+    .then(async () => {
+        console.log("Seeding clipart data...");
+        const result = await ClipartModel.insertMany(cliparts);
+        console.log("Clipart data seeded successfully. Inserted count:", result.length);
     })
     .then(() => {
         // Disconnect from the database.
