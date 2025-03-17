@@ -13,7 +13,7 @@ const paymentRoutes = require('./routes/paymentRoutes.js');  // Import payment r
 const clipartRoutes = require('./routes/clipartRoutes.js');  // Import clipart routes
 const designRoutes = require('./routes/designRoutes.js');  // Import design routes
 const stockRoutes = require('./routes/stockRoutes.js');  // Import stock routes
-const dataDumpRoutes = require('./routes/datadumpRoutes.js');  // Corrected import with lowercase "d"
+const datadumpRoutes = require('./routes/datadumpRoutes.js');
 
 const app = express();
 const HOST = process.env.HOST || 'localhost';
