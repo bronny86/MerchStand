@@ -74,5 +74,20 @@ app.get('/databaseDump', async (req, res) => {
     }
 });
 
+// Database Health Check Route
+app.get('/databaseHealth', (req, res) => {
+    const databaseState = mongoose.connection.readyState;
+    const databaseName = mongoose.connection.name;
+    const databaseModels = mongoose.connection.modelNames();
+    const databaseHost = mongoose.connection.host;
+
+    res.json({
+        readyState: databaseState,
+        dbName: databaseName,
+        dbModels: databaseModels,
+        dbHost: databaseHost
+    });
+});
+
 // Export app for testing
 module.exports = { app };
