@@ -6,6 +6,18 @@ meta {
 
 patch {
   url: http://localhost:5000/api/users/1
-  body: none
+  body: json
   auth: none
+}
+
+body:json {
+  {
+    "bandName": "LCD Soundsystem",
+    "label": "DFA Records",
+    "genre": "Electronica",
+    "location": "New York City",
+    "contactEmail": "lcd@email.com",
+    "contactPhone": "0400 000 000",
+    "passwordHash": "password"
+  }
 }
