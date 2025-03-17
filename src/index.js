@@ -53,5 +53,21 @@ app.get('/', (req, res) => {
     res.json({ message: 'Welcome to MerchStand!' });
 });
 
+// Add /databaseDump route to return a mock database dump or data from actual database
+app.get('/databaseDump', (req, res) => {
+    // Example: Return a mock database dump or you can modify to fetch actual data
+    // If you're using MongoDB, for example, you could query the database and return data
+    const Record = require('./models/Record'); // Import your MongoDB model
+
+    // Fetch all records from the database (assuming you have a model for it)
+    Record.find({})
+        .then(records => {
+            res.json({ message: 'Database Dump', data: records });
+        })
+        .catch(err => {
+            res.status(500).json({ message: 'Error fetching database dump', error: err });
+        });
+});
+
 // Export app for testing
 module.exports = { app };
