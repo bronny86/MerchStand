@@ -17,7 +17,7 @@ const customDesignRoutes = require('./routes/customtshirtdesignRoutes');
 
 const app = express();
 const HOST = process.env.HOST || 'localhost';
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000; // This should already be correct
 
 // Security Middleware
 app.use(helmet());
