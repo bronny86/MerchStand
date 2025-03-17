@@ -1,16 +1,18 @@
-// src/tests/user.test.js
 const request = require('supertest');
 const mongoose = require('mongoose');
-const { app } = require('../index'); // Updated path
+const { app } = require('../index'); // Import app from index.js
 
-// Use a test database URI
-const testDB = 'mongodb://localhost:27017/test-database';
-
-let token; // To store JWT token for authenticated requests
-let createdUserId; // To store a user ID for later tests
+let token; // Store JWT token for authenticated requests
+let createdUserId; // Store a user ID for later tests
 
 beforeAll(async () => {
-  await mongoose.connect(testDB);
+  // Ensure we're connected to the test database
+  if (mongoose.connection.readyState === 0) {
+    await mongoose.connect(process.env.TEST_DATABASE_URL || 'mongodb://localhost:27017/test-database');
+  }
+
+  // Clear existing database before running tests
+  await mongoose.connection.db.dropDatabase();
 
   // Create a test user
   const createRes = await request(app)
@@ -35,16 +37,13 @@ beforeAll(async () => {
       password: 'password'
     });
 
-  console.log("Login Response:", loginRes.body); // Debugging
-
   token = loginRes.body.token;
 });
 
 afterAll(async () => {
-  if (mongoose.connection.db) {
-    await mongoose.connection.db.dropDatabase();
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.connection.close(); // Ensure DB connection is closed after tests
   }
-  await mongoose.connection.close();
 });
 
 describe('User Endpoints (Authenticated)', () => {
@@ -83,6 +82,4 @@ describe('User Endpoints (Authenticated)', () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('_id', createdUserId);
   });
-
-  
 });
