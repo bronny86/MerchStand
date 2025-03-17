@@ -48,7 +48,27 @@ const users = [
 ];
 
 // Empty arrays for other collections (to be filled in later)
-const payments = [];
+const payments = [
+    {
+        "userId": "67d3acf9f4f84e7c4ec75e9b",
+        "paymentMethod": "Invoice",
+        "last4Digits": "1234",
+        "transactionId": "TXN123456789"
+      },
+      {
+        "userId": "67d3acf9f4f84e7c4ec75e9c",
+        "paymentMethod": "Invoice",
+        "last4Digits": "5678",
+        "transactionId": "TXN987654321"
+      },
+      {
+        "userId": "67d3acf9f4f84e7c4ec75e9d",
+        "paymentMethod": "Invoice",
+        "last4Digits": "9012",
+        "transactionId": "TXN123098765"
+      }
+
+];
 const orders = [];
 const stocks = [];
 const designs = [];
@@ -103,6 +123,11 @@ databaseConnector(databaseURL)
         console.log("User data seeded successfully. Inserted count:", result.length);
         // Additional seeding operations for other collections can be added here:
         // await PaymentModel.insertMany(payments);
+    })
+    .then(async () => {
+        console.log("Seeding payment data...");
+        const result = await PaymentModel.insertMany(payments);
+        console.log("Payment data seeded successfully. Inserted count:", result.length);
         // await OrderModel.insertMany(orders);
         // await StockModel.insertMany(stocks);
         // await DesignModel.insertMany(designs);
