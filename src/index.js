@@ -49,7 +49,7 @@ app.use('/payments', paymentRoutes);  // Use the payment routes
 app.use('/cliparts', clipartRoutes);  // Use the clipart routes
 app.use('/designs', designRoutes);  // Use the design routes
 app.use('/stocks', stockRoutes);  // Use the stock routes
-
+app.use('/datadump',dataDumpRoutes);
 
 // Default route for the root path returning JSON
 app.get('/', (req, res) => {
