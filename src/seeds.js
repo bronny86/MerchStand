@@ -69,7 +69,37 @@ const payments = [
       }
 
 ];
-const orders = [];
+const orders = [
+    {
+        "userId": "60c72b2f9b1e8c0012345678", 
+        "designId": "60c72b2f9b1e8c0012345679", 
+        "tshirtId": "60c72b2f9b1e8c001234567a", 
+        "quantity": 2,
+        "totalPrice": 29.98,
+        "orderDate": "2025-03-15T12:00:00Z",
+        "orderStatus": "Pending"
+      },
+        {
+            "userId": "60c72b2f9b1e8c0012345678",
+            "designId": "60c72b2f9b1e8c0012345679",
+            "tshirtId": "60c72b2f9b1e8c001234567a",
+            "quantity": 2,
+            "totalPrice": 29.98,
+            "orderDate": "2025-03-15T12:00:00Z",
+            "orderStatus": "Pending"
+          },
+
+          {
+            "userId": "60c72b2f9b1e8c0012345678",
+            "designId": "60c72b2f9b1e8c0012345679",
+            "tshirtId": "60c72b2f9b1e8c001234567a",
+            "quantity": 2,
+            "totalPrice": 29.98,
+            "orderDate": "2025-03-15T12:00:00Z",
+            "orderStatus": "Pending"
+          }
+      
+];
 const stocks = [];
 const designs = [];
 const fonts = [];
@@ -129,6 +159,13 @@ databaseConnector(databaseURL)
         const result = await PaymentModel.insertMany(payments);
         console.log("Payment data seeded successfully. Inserted count:", result.length);
         // await OrderModel.insertMany(orders);
+
+    })
+    .then(async () => {
+        console.log("Seeding order data...");
+        const result = await OrderModel.insertMany(orders);
+        console.log("Order data seeded successfully. Inserted count:", result.length);
+        
         // await StockModel.insertMany(stocks);
         // await DesignModel.insertMany(designs);
         // await FontModel.insertMany(fonts);
