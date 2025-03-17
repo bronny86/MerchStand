@@ -37,9 +37,22 @@ app.use(express.urlencoded({ extended: true }));
 const databaseURL = process.env.DATABASE_URL || "mongodb://localhost:27017/development-database";
 console.log(`Connecting to database at: ${databaseURL}`);
 
-mongoose.connect(databaseURL)
-    .then(() => console.log("✅ Database connected successfully!"))
-    .catch(error => console.error("❌ Database connection error:", error));
+mongoose.connect(databaseURL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => {
+    console.log("✅ Database connected successfully!");
+
+    // Start server only if DB connection is successful
+    server.listen(PORT, () => {
+        console.log(`🚀 Server running on http://${HOST}:${PORT}`);
+    });
+})
+.catch(error => {
+    console.error("❌ Database connection error:", error);
+    process.exit(1); // Exit the process if DB connection fails
+});
 
 // Mount Routes
 const authRoutes = require('./routes/authRoutes');
@@ -88,11 +101,6 @@ app.get('*', (req, res) => {
 // Prevent Multiple Instances on the Same Port
 const server = http.createServer(app);
 
-server.listen(PORT, () => {
-    console.log(`🚀 Server running on http://${HOST}:${PORT}`);
-});
-
-// Handle Port in Use Error and Auto-Increment Port
 server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
         console.error(`❌ Port ${PORT} is already in use. Trying a new port...`);
