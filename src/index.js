@@ -48,9 +48,9 @@ app.use('/cliparts', clipartRoutes);  // Use the clipart routes
 app.use('/designs', designRoutes);  // Use the design routes
 app.use('/stocks', stockRoutes);  // Use the stock routes
 
-// Default route for the root path
+// Default route for the root path returning JSON
 app.get('/', (req, res) => {
-    res.send('Welcome to MerchStand!');
+    res.json({ message: 'Welcome to MerchStand!' });
 });
 
 // Export app for testing
