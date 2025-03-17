@@ -1,25 +1,27 @@
-// src/tests/user.test.js
 const request = require('supertest');
 const mongoose = require('mongoose');
-const { app } = require('../server'); // Adjust path if needed
+const { app } = require('../index'); // Import app from index.js
 
-// Use a test database URI
-const testDB = 'mongodb://localhost:27017/test-database';
-
-let token; // To store JWT token for authenticated requests
-let createdUserId; // To store a user ID for later tests
+let token; // Store JWT token for authenticated requests
+let createdUserId; // Store a user ID for later tests
 
 beforeAll(async () => {
-  await mongoose.connect(testDB, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-  
+  // Ensure we're connected to the test database
+  if (mongoose.connection.readyState === 0) {
+    await mongoose.connect(process.env.TEST_DATABASE_URL || 'mongodb://localhost:27017/test-database', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+  }
+
+  // Generate a unique email to avoid conflicts
+  const uniqueEmail = `testuser_${Date.now()}@example.com`;
+
   // Create a test user
   const createRes = await request(app)
     .post('/user')
     .send({
-      contactEmail: 'testuser@example.com',
+      contactEmail: uniqueEmail,  // Use the unique email
       password: 'password',
       bandName: 'Test Band',
       label: 'Test Label',
@@ -27,30 +29,36 @@ beforeAll(async () => {
       location: 'Test Location',
       contactPhone: '1234567890'
     });
-  createdUserId = createRes.body._id;
+
+  createdUserId = createRes.body._id;  // Capture the user ID for later tests
 
   // Login to get a token
   const loginRes = await request(app)
     .post('/auth/login')
     .send({
-      contactEmail: 'testuser@example.com',
+      contactEmail: uniqueEmail,  // Use the same unique email for login
       password: 'password'
     });
-  token = loginRes.body.token;
+
+  token = loginRes.body.token; // Capture the token for authenticated requests
 });
 
 afterAll(async () => {
-  await mongoose.connection.db.dropDatabase();
-  await mongoose.connection.close();
+  if (mongoose.connection.readyState !== 0) {
+    // Drop the database after tests are finished
+    // await mongoose.connection.db.dropDatabase();
+    await mongoose.connection.close();
+  }
 });
 
 describe('User Endpoints (Authenticated)', () => {
   it('should create a new user', async () => {
+    const uniqueEmail = `newuser_${Date.now()}@example.com`;  // Generate a unique email for the new user
     const res = await request(app)
       .post('/user')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        contactEmail: 'newuser@example.com',
+        contactEmail: uniqueEmail,  // Use the unique email
         password: 'password',
         bandName: 'New Band',
         label: 'New Label',
@@ -58,6 +66,8 @@ describe('User Endpoints (Authenticated)', () => {
         location: 'New Location',
         contactPhone: '0987654321'
       });
+
+    console.log("Create User Response:", res.body);  // Log response for debugging
     expect(res.statusCode).toEqual(201);
     expect(res.body).toHaveProperty('_id');
   });
@@ -66,18 +76,19 @@ describe('User Endpoints (Authenticated)', () => {
     const res = await request(app)
       .get('/user')
       .set('Authorization', `Bearer ${token}`);
+
     expect(res.statusCode).toEqual(200);
     expect(Array.isArray(res.body)).toBeTruthy();
   });
 
   it('should fetch a specific user by id', async () => {
+    console.log("Created User ID:", createdUserId);  // Log to ensure createdUserId is assigned
+
     const res = await request(app)
-      .get(`/user/id=${createdUserId}`)
+      .get(`/user/${createdUserId}`)
       .set('Authorization', `Bearer ${token}`);
+
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('_id', createdUserId);
   });
-
-  // You can add additional tests for update and delete endpoints here,
-  // ensuring you include the 'Authorization' header with your token.
 });

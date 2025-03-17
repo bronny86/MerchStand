@@ -1,42 +1,48 @@
-// src/controllers/authController.js
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
-
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const User = require('../models/User');
-
-console.log('JWT_SECRET:', JWT_SECRET);
-
-
-/**
- * POST /auth/login
- * Authenticates a user and returns a JWT token with the user's id, contactEmail, and role.
- */
 exports.login = async (req, res, next) => {
   try {
-    const { contactEmail, password } = req.body;
+    let { contactEmail, password } = req.body;
+
     if (!contactEmail || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+      console.log("Login error: Missing email or password");
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
+    // Ensure email is formatted correctly
+    contactEmail = contactEmail.trim().toLowerCase();
+    console.log(`Login Attempt: ${contactEmail}`);
+
+    // Check if email exists in database
     const user = await User.findOne({ contactEmail });
+
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      console.log("User not found in DB for:", contactEmail);
+      
+      // Debugging: Log all users to verify stored emails
+      const allUsers = await User.find({}, { contactEmail: 1 });
+      console.log("All Users in DB:", allUsers);
+      
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
+    console.log(`User found: ${user.contactEmail}, Role: ${user.role}`);
+
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.passwordHash);
+    console.log(`bcrypt.compare result: ${isMatch}`);
+
     if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      console.log("Password mismatch!");
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const payload = {
-      id: user._id,
-      contactEmail: user.contactEmail,
-      role: user.role
-    };
+    console.log("Login successful!");
 
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+    // Generate JWT Token
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
     res.status(200).json({
       message: 'Login successful',
@@ -44,7 +50,9 @@ exports.login = async (req, res, next) => {
       userId: user._id,
       role: user.role
     });
+
   } catch (error) {
-    next(error);
+    console.error("Login error:", error);
+    res.status(500).json({ error: "Server error" });
   }
 };

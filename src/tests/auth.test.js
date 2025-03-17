@@ -1,7 +1,8 @@
 // src/tests/auth.test.js
 const request = require('supertest');
 const mongoose = require('mongoose');
-const { app } = require('../server');
+const { app } = require('../index');
+const { databaseConnector, disconnect } = require('../database'); // Import database connection utilities
 
 // Use a test database URI
 const testDB = 'mongodb://localhost:27017/test-database';
@@ -10,10 +11,10 @@ let token; // to store valid JWT token for protected routes
 let createdUserId;
 
 beforeAll(async () => {
-  await mongoose.connect(testDB, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  // Connect to the test database
+  if (mongoose.connection.readyState === 0) {
+    await databaseConnector(testDB);
+  }
   
   // Create a test user for authentication (registration endpoint is open)
   const createRes = await request(app)
@@ -40,8 +41,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await mongoose.connection.db.dropDatabase();
-  await mongoose.connection.close();
+  // Disconnect and clean up after all tests
+  await disconnect();
 });
 
 describe('Authentication Endpoints', () => {

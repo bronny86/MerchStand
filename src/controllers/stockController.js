@@ -1,5 +1,4 @@
 // src/controllers/stockController.js
-
 const Stock = require('../models/Stock'); 
 
 // GET all stocks

@@ -1,119 +1,73 @@
-// index.js
 require('dotenv').config();
-
 const express = require('express');
-const http = require('http');
+const cors = require('cors');
+const helmet = require('helmet');
+
+// Importing routes
+const { databaseConnector } = require('./database');  // Import the database connection
+const userRoutes = require('./routes/userRoutes.js');
+const authRoutes = require('./routes/authRoutes.js');
+const orderRoutes = require('./routes/orderRoutes.js');  // Import the order routes
+const paymentRoutes = require('./routes/paymentRoutes.js');  // Import payment routes
+const clipartRoutes = require('./routes/clipartRoutes.js');  // Import clipart routes
+const designRoutes = require('./routes/designRoutes.js');  // Import design routes
+const stockRoutes = require('./routes/stockRoutes.js');  // Import stock routes
+
 const app = express();
 const HOST = process.env.HOST || 'localhost';
-let PORT = process.env.PORT || 5000;
-
-const helmet = require('helmet');
-const cors = require('cors');
-const mongoose = require('mongoose');
+const PORT = process.env.PORT || 5000;
 
 // Security Middleware
 app.use(helmet());
-app.use(helmet.permittedCrossDomainPolicies());
-app.use(helmet.referrerPolicy());
-app.use(helmet.contentSecurityPolicy({
-    directives: {
-        defaultSrc: ["'self'"]
-    }
-}));
+app.use(cors());
 
-// CORS Configuration
-const corsOptions = {
-    origin: ["http://localhost:5000", "https://merchstand.onrender.com"],
-    optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
-
+// Middleware to parse requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// MongoDB Connection
+// Database Connection
 const databaseURL = process.env.DATABASE_URL || "mongodb://localhost:27017/development-database";
-console.log(`Loaded DATABASE_URL: ${databaseURL}`);
-console.log(`Connecting to database at: ${databaseURL}`);
 
-mongoose.connect(databaseURL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => console.log("✅ Database connected successfully!"))
-.catch(error => console.error("❌ Database connection error:", error));
+databaseConnector(databaseURL)
+    .then(() => {
+        // Only start the server if NOT in test mode
+        if (process.env.NODE_ENV !== 'test') {
+            app.listen(PORT, () => {
+                console.log(`🚀 Server running on http://${HOST}:${PORT}`);
+            });
+        }
+    })
+    .catch(error => console.error("❌ Database connection error:", error));
 
-// Mount Routes
-const authRoutes = require('./routes/authRoutes');
-app.use('/auth', authRoutes);
-
-const userRoutes = require('./routes/userRoutes.js');
+// Registering routes
 app.use('/user', userRoutes);
+app.use('/auth', authRoutes);
+app.use('/orders', orderRoutes);  // Use the order routes
+app.use('/payments', paymentRoutes);  // Use the payment routes
+app.use('/cliparts', clipartRoutes);  // Use the clipart routes
+app.use('/designs', designRoutes);  // Use the design routes
+app.use('/stocks', stockRoutes);  // Use the stock routes
 
-const designRoutes = require('./routes/designRoutes.js');
-app.use('/designs', designRoutes);
-
-const orderRoutes = require('./routes/orderRoutes.js');
-app.use('/orders', orderRoutes);
-
-const fontRoutes = require('./routes/fontRoutes.js');
-app.use('/fonts', fontRoutes);
-
-const clipartRoutes = require('./routes/clipartRoutes.js');
-app.use('/cliparts', clipartRoutes);
-
-const paymentRoutes = require('./routes/paymentRoutes.js');
-app.use('/payments', paymentRoutes);
-
-const stockRoutes = require('./routes/stockRoutes.js');
-app.use('/stocks', stockRoutes);
-
-const customDesignRoutes = require('./routes/customtshirtdesignRoutes.js');
-app.use('/custom-designs', customDesignRoutes);
-
-// Database Health Check
-app.get("/databaseHealth", (req, res) => {
-    const databaseState = mongoose.connection.readyState;
-    const databaseName = mongoose.connection.name;
-    const databaseModels = mongoose.connection.modelNames();
-    const databaseHost = mongoose.connection.host;
-
-    res.json({
-        readyState: databaseState,
-        dbName: databaseName,
-        dbModels: databaseModels,
-        dbHost: databaseHost
-    });
-});
-
-// Root Route
+// Default route for the root path returning JSON
 app.get('/', (req, res) => {
-    res.json({ message: "Hello world!" });
+    res.json({ message: 'Welcome to MerchStand!' });
 });
 
-// Catch-All Route for Undefined Endpoints
-app.get('*', (req, res) => {
-    res.status(404).json({
-        message: "No route with that path found!",
-        attemptedPath: req.path
-    });
-});
+// Add /databaseDump route to return a mock database dump or data from actual database
+app.get('/databaseDump', (req, res) => {
+    // Example: Return a mock database dump or you can modify to fetch actual data
+    // If you're using MongoDB, for example, you could query the database and return data
+    const Record = require('./models/Record'); // Import your MongoDB model
 
-// Prevent Multiple Instances on the Same Port
-const server = http.createServer(app);
-server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-        console.error(`❌ Port ${PORT} is already in use. Trying a new port...`);
-        PORT++;
-        server.listen(PORT, () => {
-            console.log(`🚀 Server running on http://${HOST}:${PORT}`);
+    // Fetch all records from the database (assuming you have a model for it)
+    Record.find({})
+        .then(records => {
+            res.json({ message: 'Database Dump', data: records });
+        })
+        .catch(err => {
+            res.status(500).json({ message: 'Error fetching database dump', error: err });
         });
-    } else {
-        console.error('❌ Server error:', err);
-    }
 });
 
-server.listen(PORT, () => {
-    console.log(`🚀 Server running on http://${HOST}:${PORT}`);
-});
-
-module.exports = { HOST, PORT, app };
+// Export app for testing
+module.exports = { app };

@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 const { databaseConnector } = require('./database');
 
-// Import the models that we'll seed (models folder is inside src)
+// Import models
 const UserModel = require("./models/User.js");
 const PaymentModel = require("./models/Payment.js");
 const OrderModel = require("./models/Order.js");
@@ -11,291 +12,149 @@ const FontModel = require("./models/Font.js");
 const ClipartModel = require("./models/ClipArt.js");
 
 // Load environment variables
-const dotenv = require('dotenv');
-dotenv.config();
+require('dotenv').config();
 
-console.log("Starting the seed script...");
-
-// Create some raw data for the users collection.
-const users = [
-    {
-        bandName: "Nirvana",
-        label: "Sub Pop",
-        genre: "Grunge",
-        location: "Seattle, Washington",
-        contactEmail: "nirvana@email.com",
-        contactPhone: "555-555-5555",
-        passwordHash: "password"
-    },
-    {
-        bandName: "Rage Against the Machine",
-        label: "Epic Records",
-        genre: "Rap Metal",
-        location: "Los Angeles, California",
-        contactEmail: "ratm@email.com",
-        contactPhone: "555-555-55456",
-        passwordHash: "password"
-    },
-    {
-        bandName: "The Cure",
-        label: "Fiction Records",
-        genre: "Post-Punk",
-        location: "Crawley, West Sussex, England",
-        contactEmail: "thecure@email.com",
-        contactPhone: "555-555-5557",
-        passwordHash: "password"
-    }
-];
-
-// Empty arrays for other collections (to be filled in later)
-const payments = [
-    {
-        "userId": "67d3acf9f4f84e7c4ec75e9b",
-        "paymentMethod": "Invoice",
-        "last4Digits": "1234",
-        "transactionId": "TXN123456789"
-      },
-      {
-        "userId": "67d3acf9f4f84e7c4ec75e9c",
-        "paymentMethod": "Invoice",
-        "last4Digits": "5678",
-        "transactionId": "TXN987654321"
-      },
-      {
-        "userId": "67d3acf9f4f84e7c4ec75e9d",
-        "paymentMethod": "Invoice",
-        "last4Digits": "9012",
-        "transactionId": "TXN123098765"
-      }
-
-];
-const orders = [
-    {
-        "userId": "60c72b2f9b1e8c0012345678", 
-        "designId": "60c72b2f9b1e8c0012345679", 
-        "tshirtId": "60c72b2f9b1e8c001234567a", 
-        "quantity": 2,
-        "totalPrice": 29.98,
-        "orderDate": "2025-03-15T12:00:00Z",
-        "orderStatus": "Pending"
-      },
-        {
-            "userId": "60c72b2f9b1e8c0012345678",
-            "designId": "60c72b2f9b1e8c0012345679",
-            "tshirtId": "60c72b2f9b1e8c001234567a",
-            "quantity": 2,
-            "totalPrice": 29.98,
-            "orderDate": "2025-03-15T12:00:00Z",
-            "orderStatus": "Pending"
-          },
-
-          {
-            "userId": "60c72b2f9b1e8c0012345678",
-            "designId": "60c72b2f9b1e8c0012345679",
-            "tshirtId": "60c72b2f9b1e8c001234567a",
-            "quantity": 2,
-            "totalPrice": 29.98,
-            "orderDate": "2025-03-15T12:00:00Z",
-            "orderStatus": "Pending"
-          }
-      
-];
-const stocks = [
-    {
-        "color": "Red",
-        "size": "L",
-        "material": "Cotton",
-        "price": 19.99,
-        "stockQuantity": 100
-      },
-
-        {
-            "color": "Blue",
-            "size": "M",
-            "material": "Cotton",
-            "price": 19.99,
-            "stockQuantity": 100
-          },
-          {
-            "color": "Green",
-            "size": "S",
-            "material": "Cotton",
-            "price": 19.99,
-            "stockQuantity": 100
-          }
-      
-];
-const designs = [
-    {
-        "textContent": "Custom Band Design",
-        "fontSize": 24,
-        "position": "center",
-        "fontId": "60c72b2f9b1e8c0012345678",
-        "clipartId": "60c72b2f9b1e8c0012345679"
-      },
-
-      {
-        "textContent": "Custom Band Design",
-        "fontSize": 24,
-        "position": "center",
-        "fontId": "60c72b2f9b1e8c0012345678",
-        "clipartId": "60c72b2f9b1e8c0012345679"
-      },
-
-        {
-            "textContent": "Custom Band Design",
-            "fontSize": 24,
-            "position": "center",
-            "fontId": "60c72b2f9b1e8c0012345678",
-            "clipartId": "60c72b2f9b1e8c0012345679"
-          }
-];
-const fonts = [
-    {
-        "fontName": "Times New Roman",
-        "fontStyle": "Regular",
-        "fontCost": 9.99,
-        "fontColor": "#000000"
-      },
-        {
-            "fontName": "Arial",
-            "fontStyle": "Regular",
-            "fontCost": 9.99,
-            "fontColor": "#000000"
-        },
-        {
-            "fontName": "Helvetica",
-            "fontStyle": "Regular",
-            "fontCost": 9.99,
-            "fontColor": "#000000"
-        }
-      
-];
-const cliparts = [
-    {
-        "clipartName": "Dragon",
-        "category": "Animal",
-        "creator": "Mr. Dragon",
-        "clipartCost": 4.99,
-        "colorOptions": "red, blue, green"
-      },
-
-      {
-        "clipartName": "Cat",
-        "category": "Animal",
-        "creator": "Mr. Cat",
-        "clipartCost": 4.99,
-        "colorOptions": "red, blue, green"
-      },
-      
-        {
-            "clipartName": "Dog",
-            "category": "Animal",
-            "creator": "Mr. Dog",
-            "clipartCost": 4.99,
-            "colorOptions": "red, blue, green"
-          }
-      
-];
-
-// Determine the database URL based on NODE_ENV
-let databaseURL = "";
-switch (process.env.NODE_ENV.toLowerCase()) {
-    case "test":
-        databaseURL = "mongodb://localhost:27017/ExpressBuildAnAPI-test";
-        break;
-    case "development":
-        databaseURL = process.env.DATABASE_URL;
-        break;
-    case "production":
-        databaseURL = process.env.DATABASE_URL;
-        break;
-    default:
-        console.error("Incorrect JS environment specified, database will not be connected.");
-        break;
-}
+// 🔹 Ensure we are in the correct database environment
+const databaseURL = process.env.DATABASE_URL || "mongodb://localhost:27017/merchstand";
 
 console.log(`Connecting to database at: ${databaseURL}`);
 
-// Connect to the database and seed data using a promise chain.
-databaseConnector(databaseURL)
-    .then(() => {
-        console.log("Database connected successfully!");
-    })
-    .catch(error => {
-        console.log(`
-        Some error occurred connecting to the database! It was: 
-        ${error}
-        `);
-    })
-    .then(async () => {
+// Hash Password Function
+const hashPassword = async (password) => {
+    const saltRounds = 10;
+    return await bcrypt.hash(password, saltRounds);
+};
+
+// Seed Data
+const seedDatabase = async () => {
+    try {
+        await databaseConnector(databaseURL);
+        console.log("✅ Database connected successfully!");
+
+        // 🔹 WIPE existing data if set in .env
         if (process.env.WIPE === "true") {
-            console.log("Wiping existing data...");
-            // Get the names of all collections in the DB.
+            console.log("🗑️ Wiping existing database...");
             const collections = await mongoose.connection.db.listCollections().toArray();
-            // Wait for all drop operations to complete.
             await Promise.all(
                 collections.map((collection) => mongoose.connection.db.dropCollection(collection.name))
             );
-            console.log("Old DB data deleted.");
+            console.log("✅ Old database data deleted.");
         }
-    })
-    .then(async () => {
-        console.log("Seeding user data...");
-        const result = await UserModel.insertMany(users);
-        console.log("User data seeded successfully. Inserted count:", result.length);
-        // Additional seeding operations for other collections can be added here:
-        // await PaymentModel.insertMany(payments);
-    })
-    .then(async () => {
-        console.log("Seeding payment data...");
-        const result = await PaymentModel.insertMany(payments);
-        console.log("Payment data seeded successfully. Inserted count:", result.length);
-        // await OrderModel.insertMany(orders);
 
-    })
-    .then(async () => {
-        console.log("Seeding order data...");
-        const result = await OrderModel.insertMany(orders);
-        console.log("Order data seeded successfully. Inserted count:", result.length);
+        // 🔹 Seed Users (Including Admins)
+        console.log("👤 Seeding users...");
+        const users = [
+            {
+                bandName: "Nirvana",
+                label: "Sub Pop",
+                genre: "Grunge",
+                location: "Seattle, Washington",
+                contactEmail: "nirvana@email.com",
+                contactPhone: "555-555-5555",
+                passwordHash: await hashPassword("password"),
+                role: "user"
+            },
+            {
+                bandName: "Admin - Angus",
+                label: "N/A",
+                genre: "N/A",
+                location: "System",
+                contactEmail: "your@email.com",
+                contactPhone: "555-555-9999",
+                passwordHash: await hashPassword("adminpassword"),
+                role: "admin"
+            },
+            {
+                bandName: "Admin - Bonny",
+                label: "N/A",
+                genre: "N/A",
+                location: "System",
+                contactEmail: "bonny@email.com",
+                contactPhone: "555-555-8888",
+                passwordHash: await hashPassword("adminpassword"),
+                role: "admin"
+            }
+        ];
 
-        // await StockModel.insertMany(stocks);
+        const userResult = await UserModel.insertMany(users);
+        console.log(`✅ Users seeded: ${userResult.length}`);
 
-    })
-    .then(async () => {
-        console.log("Seeding stock data...");
-        const result = await StockModel.insertMany(stocks);
-        console.log("Stock data seeded successfully. Inserted count:", result.length);
+        // 🔹 Assign Dynamic IDs
+        const userIds = userResult.map(user => user._id);
+        console.log("User IDs:", userIds);
 
-        // await DesignModel.insertMany(designs);
-    })
-    .then(async () => {
-        console.log("Seeding design data...");
-        const result = await DesignModel.insertMany(designs);
-        console.log("Design data seeded successfully. Inserted count:", result.length
-        );
-        // await FontModel.insertMany(fonts);
-    })
-    .then(async () => {
-        console.log("Seeding font data...");
-        const result = await FontModel.insertMany(fonts);
-        console.log("Font data seeded successfully. Inserted count:", result.length);
+        // 🔹 Seed Payments
+        console.log("💳 Seeding payments...");
+        const payments = userIds.map(userId => ({
+            userId,
+            paymentMethod: "Credit Card",
+            last4Digits: "1234",
+            transactionId: `TXN${Math.floor(Math.random() * 10000)}`
+        }));
 
-        // await ClipartModel.insertMany(cliparts);
+        const paymentResult = await PaymentModel.insertMany(payments);
+        console.log(`✅ Payments seeded: ${paymentResult.length}`);
 
-    })
-    .then(async () => {
-        console.log("Seeding clipart data...");
-        const result = await ClipartModel.insertMany(cliparts);
-        console.log("Clipart data seeded successfully. Inserted count:", result.length);
-    })
-    .then(() => {
-        // Disconnect from the database.
+        // 🔹 Seed Stocks
+        console.log("👕 Seeding stocks...");
+        const stocks = [
+            { color: "Black", size: "L", material: "Cotton", price: 25, stockQuantity: 100 },
+            { color: "White", size: "M", material: "Polyester", price: 20, stockQuantity: 150 }
+        ];
+        const stockResult = await StockModel.insertMany(stocks);
+        console.log(`✅ Stocks seeded: ${stockResult.length}`);
+
+        // 🔹 Seed Fonts
+        console.log("🖋️ Seeding fonts...");
+        const fonts = [
+            { fontName: "Arial", fontStyle: "Bold", fontCost: 5, fontColor: "Black" },
+            { fontName: "Times New Roman", fontStyle: "Italic", fontCost: 7, fontColor: "Blue" }
+        ];
+        const fontResult = await FontModel.insertMany(fonts);
+        console.log(`✅ Fonts seeded: ${fontResult.length}`);
+
+        // 🔹 Seed Cliparts
+        console.log("🎨 Seeding cliparts...");
+        const cliparts = [
+            { clipartName: "Skull", category: "Rock", creator: "Artist A", clipartCost: 10, colorOptions: "Black, White" },
+            { clipartName: "Guitar", category: "Music", creator: "Artist B", clipartCost: 15, colorOptions: "Red, Blue" }
+        ];
+        const clipartResult = await ClipartModel.insertMany(cliparts);
+        console.log(`✅ Cliparts seeded: ${clipartResult.length}`);
+
+        // 🔹 Seed Designs
+        console.log("🎨 Seeding designs...");
+        const designs = [
+            { textContent: "Rock Forever", fontSize: 16, position: "Center", fontId: fontResult[0]._id, clipartId: clipartResult[0]._id },
+            { textContent: "Metal Rules", fontSize: 18, position: "Top", fontId: fontResult[1]._id, clipartId: clipartResult[1]._id }
+        ];
+        const designResult = await DesignModel.insertMany(designs);
+        console.log(`✅ Designs seeded: ${designResult.length}`);
+
+        // 🔹 Seed Orders
+        console.log("📦 Seeding orders...");
+        const orders = userIds.map(userId => ({
+            userId,
+            designId: designResult[0]._id,
+            tshirtId: stockResult[0]._id,
+            quantity: 2,
+            totalPrice: 50,
+            orderDate: new Date(),
+            orderStatus: "Pending"
+        }));
+
+        const orderResult = await OrderModel.insertMany(orders);
+        console.log(`✅ Orders seeded: ${orderResult.length}`);
+
+        // 🔹 Done!
+        console.log("✅ Seeding completed successfully.");
+    } catch (error) {
+        console.error("❌ Error during seeding:", error);
+    } finally {
         mongoose.connection.close();
-        console.log("DB seed connection closed.");
-    })
-    .catch(error => {
-        console.error("Error during seeding:", error);
-    });
+        console.log("🔌 DB seed connection closed.");
+    }
+};
 
-console.log("Seed script execution completed.");
+// Run the seed function
+seedDatabase();
