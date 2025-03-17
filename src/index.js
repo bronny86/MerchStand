@@ -13,7 +13,7 @@ const paymentRoutes = require('./routes/paymentRoutes.js');  // Import payment r
 const clipartRoutes = require('./routes/clipartRoutes.js');  // Import clipart routes
 const designRoutes = require('./routes/designRoutes.js');  // Import design routes
 const stockRoutes = require('./routes/stockRoutes.js');  // Import stock routes
-const dataDumpRoutes = require('./routes/datadumpRoutes');  // Corrected import with lowercase "d"
+const dataDumpRoutes = require('./routes/datadumpRoutes.js');  // Corrected import with lowercase "d"
 
 const app = express();
 const HOST = process.env.HOST || 'localhost';
@@ -49,7 +49,7 @@ app.use('/payments', paymentRoutes);  // Use the payment routes
 app.use('/cliparts', clipartRoutes);  // Use the clipart routes
 app.use('/designs', designRoutes);  // Use the design routes
 app.use('/stocks', stockRoutes);  // Use the stock routes
-app.use('/datadump',dataDumpRoutes);
+app.use('/datadump', datadumpRoutes);  // Route for data dump
 
 // Default route for the root path returning JSON
 app.get('/', (req, res) => {

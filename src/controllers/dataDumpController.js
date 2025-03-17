@@ -1,33 +1,24 @@
-// Controller function to handle data dump
-const DataDump = require('../models/datadump');  // Corrected import with lowercase "d"
 const mongoose = require('mongoose');
 
-async function createDataDump(req, res) {
+const getDatabaseDump = async (req, res) => {
+    const dumpContainer = {};
     try {
-        // Get the list of all collections
-        const collections = await mongoose.connection.db.listCollections().toArray();
+        let collections = await mongoose.connection.db.listCollections().toArray();
+        collections = collections.map((collection) => collection.name);
 
-        const dumpContainer = {};
-
-        // Loop through collections and store their data
-        for (const collection of collections) {
-            const collectionName = collection.name;
-            const data = await mongoose.connection.db.collection(collectionName).find({}).toArray();
-            
-            dumpContainer[collectionName] = data;
-
-            // Store the data dump in the database
-            const dataDump = new DataDump({
-                collectionName: collectionName,
-                data: data
-            });
-
-            await dataDump.save();
+        for (const collectionName of collections) {
+            let collectionData = await mongoose.connection.db.collection(collectionName).find({}).toArray();
+            dumpContainer[collectionName] = collectionData;
         }
 
-        // Respond with success message
-        res.status(200).json({ message: "Database dump completed successfully.", dump: dumpContainer });
+        console.log("Dumping database data: \n" + JSON.stringify(dumpContainer, null, 4));
+        res.json({ data: dumpContainer });
     } catch (error) {
-        res.status(500).json({ message: "Error during database dump", error: error.message });
+        console.error("Error fetching database dump:", error);
+        res.status(500).json({ message: 'Error fetching database dump', error: error.message });
     }
-}
+};
+
+module.exports = {
+    getDatabaseDump,
+};
