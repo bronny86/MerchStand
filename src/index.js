@@ -13,6 +13,7 @@ const paymentRoutes = require('./routes/paymentRoutes.js');  // Import payment r
 const clipartRoutes = require('./routes/clipartRoutes.js');  // Import clipart routes
 const designRoutes = require('./routes/designRoutes.js');  // Import design routes
 const stockRoutes = require('./routes/stockRoutes.js');  // Import stock routes
+const dataDumpRoutes = require('./routes/datadumpRoutes');  // Corrected import with lowercase "d"
 
 const app = express();
 const HOST = process.env.HOST || 'localhost';
@@ -49,26 +50,27 @@ app.use('/cliparts', clipartRoutes);  // Use the clipart routes
 app.use('/designs', designRoutes);  // Use the design routes
 app.use('/stocks', stockRoutes);  // Use the stock routes
 
+
 // Default route for the root path returning JSON
 app.get('/', (req, res) => {
     res.json({ message: 'Welcome to MerchStand!' });
 });
 
 // Add /databaseDump route to return a mock database dump or data from actual database
-app.get('/databaseDump', (req, res) => {
-    // Example: Return a mock database dump or you can modify to fetch actual data
-    // If you're using MongoDB, for example, you could query the database and return data
-    const Record = require('./models/Record'); // Import your MongoDB model
+app.get('/databaseDump', async (req, res) => {
+    const dumpContainer = {};
+    let collections = await mongoose.connection.db.listCollections().toArray();
+    collections = collections.map((collection) => collection.name);
 
-    // Fetch all records from the database (assuming you have a model for it)
-    Record.find({})
-        .then(records => {
-            res.json({ message: 'Database Dump', data: records });
-        })
-        .catch(err => {
-            res.status(500).json({ message: 'Error fetching database dump', error: err });
-        });
+    for (const collectionName of collections) {
+        let collectionData = await mongoose.connection.db.collection(collectionName).find({}).toArray();
+        dumpContainer[collectionName] = collectionData;
+    }
+
+    console.log("Dumping database data: \n" + JSON.stringify(dumpContainer, null, 4));
+    res.json({ data: dumpContainer });
 });
+
 
 // Export app for testing
 module.exports = { app };
