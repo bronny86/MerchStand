@@ -11,7 +11,7 @@ router.post('/', userController.createUser);
 // Protected routes:
 router.get('/', verifyToken, userController.getAllUsers);
 router.get('/:id', verifyToken, userController.getUserById);
-router.put('/:id', verifyToken, userController.updateUser);
-router.delete('/:id', verifyToken, userController.deleteUser);
+router.put('/:id', verifyToken, requireRole('admin'), userController.updateUser);  // Use requireRole for admin
+router.delete('/:id', verifyToken, requireRole('admin'), userController.deleteUser);  // Use requireRole for admin
 
 module.exports = router;

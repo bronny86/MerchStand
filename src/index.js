@@ -1,13 +1,21 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const { databaseConnector } = require("./database");
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+
+// Importing routes
+const { databaseConnector } = require('./database');  // Import the database connection
+const userRoutes = require('./routes/userRoutes.js');
+const authRoutes = require('./routes/authRoutes.js');
+const orderRoutes = require('./routes/orderRoutes.js');  // Import the order routes
+const paymentRoutes = require('./routes/paymentRoutes.js');  // Import payment routes
+const clipartRoutes = require('./routes/clipartRoutes.js');  // Import clipart routes
+const designRoutes = require('./routes/designRoutes.js');  // Import design routes
+const stockRoutes = require('./routes/stockRoutes.js');  // Import stock routes
 
 const app = express();
-const HOST = process.env.HOST || "localhost";
+const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 5000;
-const databaseURL = process.env.DATABASE_URL || "mongodb://localhost:27017/development-database";
 
 // Security Middleware
 app.use(helmet());
@@ -18,9 +26,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Database Connection
+const databaseURL = process.env.DATABASE_URL || "mongodb://localhost:27017/development-database";
+
 databaseConnector(databaseURL)
     .then(() => {
-        if (process.env.NODE_ENV !== "test") {
+        // Only start the server if NOT in test mode
+        if (process.env.NODE_ENV !== 'test') {
             app.listen(PORT, () => {
                 console.log(`🚀 Server running on http://${HOST}:${PORT}`);
             });
@@ -28,12 +39,14 @@ databaseConnector(databaseURL)
     })
     .catch(error => console.error("❌ Database connection error:", error));
 
-// Routes
-const userRoutes = require("./routes/userRoutes.js");
-app.use("/user", userRoutes);
-
-const authRoutes = require("./routes/authRoutes.js");
-app.use("/auth", authRoutes);
+// Registering routes
+app.use('/user', userRoutes);
+app.use('/auth', authRoutes);
+app.use('/orders', orderRoutes);  // Use the order routes
+app.use('/payments', paymentRoutes);  // Use the payment routes
+app.use('/cliparts', clipartRoutes);  // Use the clipart routes
+app.use('/designs', designRoutes);  // Use the design routes
+app.use('/stocks', stockRoutes);  // Use the stock routes
 
 // Export app for testing
 module.exports = { app };

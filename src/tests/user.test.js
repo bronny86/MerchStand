@@ -8,17 +8,20 @@ let createdUserId; // Store a user ID for later tests
 beforeAll(async () => {
   // Ensure we're connected to the test database
   if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(process.env.TEST_DATABASE_URL || 'mongodb://localhost:27017/test-database');
+    await mongoose.connect(process.env.TEST_DATABASE_URL || 'mongodb://localhost:27017/test-database', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
   }
 
-  // Clear existing database before running tests
-  await mongoose.connection.db.dropDatabase();
+  // Generate a unique email to avoid conflicts
+  const uniqueEmail = `testuser_${Date.now()}@example.com`;
 
   // Create a test user
   const createRes = await request(app)
     .post('/user')
     .send({
-      contactEmail: 'testuser@example.com',
+      contactEmail: uniqueEmail,  // Use the unique email
       password: 'password',
       bandName: 'Test Band',
       label: 'Test Label',
@@ -27,32 +30,35 @@ beforeAll(async () => {
       contactPhone: '1234567890'
     });
 
-  createdUserId = createRes.body._id;
+  createdUserId = createRes.body._id;  // Capture the user ID for later tests
 
   // Login to get a token
   const loginRes = await request(app)
     .post('/auth/login')
     .send({
-      contactEmail: 'testuser@example.com',
+      contactEmail: uniqueEmail,  // Use the same unique email for login
       password: 'password'
     });
 
-  token = loginRes.body.token;
+  token = loginRes.body.token; // Capture the token for authenticated requests
 });
 
 afterAll(async () => {
   if (mongoose.connection.readyState !== 0) {
-    await mongoose.connection.close(); // Ensure DB connection is closed after tests
+    // Drop the database after tests are finished
+    // await mongoose.connection.db.dropDatabase();
+    await mongoose.connection.close();
   }
 });
 
 describe('User Endpoints (Authenticated)', () => {
   it('should create a new user', async () => {
+    const uniqueEmail = `newuser_${Date.now()}@example.com`;  // Generate a unique email for the new user
     const res = await request(app)
       .post('/user')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        contactEmail: 'newuser@example.com',
+        contactEmail: uniqueEmail,  // Use the unique email
         password: 'password',
         bandName: 'New Band',
         label: 'New Label',
@@ -61,6 +67,7 @@ describe('User Endpoints (Authenticated)', () => {
         contactPhone: '0987654321'
       });
 
+    console.log("Create User Response:", res.body);  // Log response for debugging
     expect(res.statusCode).toEqual(201);
     expect(res.body).toHaveProperty('_id');
   });
@@ -75,8 +82,10 @@ describe('User Endpoints (Authenticated)', () => {
   });
 
   it('should fetch a specific user by id', async () => {
+    console.log("Created User ID:", createdUserId);  // Log to ensure createdUserId is assigned
+
     const res = await request(app)
-      .get(`/user/id=${createdUserId}`)
+      .get(`/user/${createdUserId}`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.statusCode).toEqual(200);

@@ -1,26 +1,36 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-// Prevent multiple connections
+let isConnected = false; // Track if the connection is established
+
 const databaseConnector = async (databaseURL) => {
-    if (mongoose.connection.readyState !== 0) {
-        console.log("🔄 Using existing database connection.");
-        return mongoose.connection;
+    // Check if the connection already exists
+    if (isConnected) {
+        console.log('Database already connected');
+        return;
     }
 
     try {
-        await mongoose.connect(databaseURL);
-        console.log("✅ Database connection successful");
+        console.log('Connecting to database...');
+        await mongoose.connect(databaseURL, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+        isConnected = true;
+        console.log('✅ Database connection successful');
     } catch (error) {
-        console.error("❌ Database connection error:", error);
+        console.error('❌ Database connection error:', error);
         throw error;
     }
 };
 
-// Properly close the connection
 const disconnect = async () => {
-    if (mongoose.connection.readyState !== 0) {
-        await mongoose.connection.close();
-        console.log("🚪 Database disconnected.");
+    if (isConnected) {
+        console.log('Disconnecting from database...');
+        await mongoose.disconnect();
+        isConnected = false;
+        console.log('✅ Database disconnected');
+    } else {
+        console.log('No active database connection to disconnect');
     }
 };
 
