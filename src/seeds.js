@@ -125,7 +125,31 @@ const stocks = [
           }
       
 ];
-const designs = [];
+const designs = [
+    {
+        "textContent": "Custom Band Design",
+        "fontSize": 24,
+        "position": "center",
+        "fontId": "60c72b2f9b1e8c0012345678",
+        "clipartId": "60c72b2f9b1e8c0012345679"
+      },
+
+      {
+        "textContent": "Custom Band Design",
+        "fontSize": 24,
+        "position": "center",
+        "fontId": "60c72b2f9b1e8c0012345678",
+        "clipartId": "60c72b2f9b1e8c0012345679"
+      },
+
+        {
+            "textContent": "Custom Band Design",
+            "fontSize": 24,
+            "position": "center",
+            "fontId": "60c72b2f9b1e8c0012345678",
+            "clipartId": "60c72b2f9b1e8c0012345679"
+          }
+];
 const fonts = [];
 const cliparts = [];
 
@@ -197,8 +221,14 @@ databaseConnector(databaseURL)
         console.log("Seeding stock data...");
         const result = await StockModel.insertMany(stocks);
         console.log("Stock data seeded successfully. Inserted count:", result.length);
-        
+
         // await DesignModel.insertMany(designs);
+    })
+    .then(async () => {
+        console.log("Seeding design data...");
+        const result = await DesignModel.insertMany(designs);
+        console.log("Design data seeded successfully. Inserted count:", result.length
+        );
         // await FontModel.insertMany(fonts);
         // await ClipartModel.insertMany(cliparts);
     })
