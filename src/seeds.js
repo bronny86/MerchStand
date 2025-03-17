@@ -100,7 +100,31 @@ const orders = [
           }
       
 ];
-const stocks = [];
+const stocks = [
+    {
+        "color": "Red",
+        "size": "L",
+        "material": "Cotton",
+        "price": 19.99,
+        "stockQuantity": 100
+      },
+
+        {
+            "color": "Blue",
+            "size": "M",
+            "material": "Cotton",
+            "price": 19.99,
+            "stockQuantity": 100
+          },
+          {
+            "color": "Green",
+            "size": "S",
+            "material": "Cotton",
+            "price": 19.99,
+            "stockQuantity": 100
+          }
+      
+];
 const designs = [];
 const fonts = [];
 const cliparts = [];
@@ -165,8 +189,15 @@ databaseConnector(databaseURL)
         console.log("Seeding order data...");
         const result = await OrderModel.insertMany(orders);
         console.log("Order data seeded successfully. Inserted count:", result.length);
-        
+
         // await StockModel.insertMany(stocks);
+
+    })
+    .then(async () => {
+        console.log("Seeding stock data...");
+        const result = await StockModel.insertMany(stocks);
+        console.log("Stock data seeded successfully. Inserted count:", result.length);
+        
         // await DesignModel.insertMany(designs);
         // await FontModel.insertMany(fonts);
         // await ClipartModel.insertMany(cliparts);
