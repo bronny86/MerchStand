@@ -14,6 +14,8 @@ const ClipartModel = require("./models/ClipArt.js");
 // Load environment variables
 require('dotenv').config();
 
+
+
 // 🔹 Ensure we are in the correct database environment
 const databaseURL = process.env.DATABASE_URL || "mongodb://localhost:27017/merchstand";
 
